@@ -22,8 +22,10 @@
 ## Запуск
 - `npm i` → `npm run dev` (локально, `--host` — открыть с iPhone по Wi-Fi), `npm run build` — tsc + сборка в `dist/`.
 - Деплой: пуш в `main` → GitHub Actions ([.github/workflows/pages.yml](.github/workflows/pages.yml)) → https://curstfear.github.io/Balance/
-- Сейчас в `src/` — превью дизайна (Vite + TS без фреймворка): «Сегодня» → план → подход → отдых.
-  Данные — заглушки в `src/preview-data.ts`; токены дизайна — `src/styles/tokens.css`.
+- Стек: Svelte 5 + TypeScript 6 + Vite. `npm run check` — svelte-check.
+- `src/ui/screens/` — экраны, `src/ui/components/` — компоненты, `src/ui/nav.svelte.ts` — стек экранов
+  (push / modal / жест «назад»), `src/ui/strings.ts` — все тексты, `src/styles/tokens.css` — токены.
+- Сейчас — превью: «Сегодня» → план → подход → отдых → итог. Данные — заглушки в `src/preview-data.ts`.
 - Дизайн: flat, без бликов и «реалистичных» градиентов; свечение — только на карточках-героях с иллюстрацией.
 - Тексты интерфейса — официальный нейтральный стиль, без разговорных слов («норм» и т. п.). Правила — docs/roadmap.md.
 - Порядок работ и признаки готовности — [docs/roadmap.md](docs/roadmap.md).
