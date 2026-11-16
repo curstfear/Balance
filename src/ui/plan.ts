@@ -12,7 +12,7 @@ function body(plan: Plan, minutes: Minutes): string {
     <div class="eyebrow" style="margin-top:6px">План на сегодня</div>
     <h1 class="large" style="margin-top:2px">${plan.title}</h1>
     <div class="seg" role="group" aria-label="Длительность" style="margin-top:14px">
-      ${([45, 55, 70] as Minutes[]).map((m) => `<button data-min="${m}" aria-pressed="${m === minutes}">${m === 45 ? 'Короче · 45' : m === 70 ? 'Длиннее · 70' : '55 мин'}</button>`).join('')}
+      ${([45, 55, 70] as Minutes[]).map((m) => `<button data-min="${m}" aria-pressed="${m === minutes}">${m} мин</button>`).join('')}
     </div>
     <div class="stats3">
       <div><div class="eyebrow" style="font-size:12px">Подходы</div><div class="n" style="color:var(--blue)">${t.sets}</div></div>
@@ -22,7 +22,7 @@ function body(plan: Plan, minutes: Minutes): string {
     <div class="sec">Разминка · 5 мин</div>
     <div class="list"><div class="li" style="align-items:center">
       <div class="badge" style="background:var(--fill2);color:var(--t2)">${icon('flame', '', 'width:16px;height:16px')}</div>
-      <div><div class="nm">Гребля + 2 лёгких подхода тяги</div><div class="sub">Добавлено само перед тяжёлой тягой</div></div></div></div>
+      <div><div class="nm">Гребной тренажёр и 2 разминочных подхода тяги</div><div class="sub">Добавлена автоматически перед тяжёлой тягой</div></div></div></div>
     <div class="sec">Основная часть</div>
     <div class="list">
       ${plan.exercises.map((e, i) => `<div class="li">

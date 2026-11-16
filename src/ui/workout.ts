@@ -7,7 +7,7 @@ import { fmt, clock } from './format';
 interface SetLog { w: number; r: number; rir: number | null }
 type Phase = 'set' | 'rest' | 'done';
 
-const RIR = [['0', 'отказ'], ['1', 'тяжело'], ['2', 'норм'], ['3+', 'легко']] as const;
+const RIR = [['0', 'отказ'], ['1', 'тяжело'], ['2', 'умеренно'], ['3+', 'легко']] as const;
 
 export function workoutScreen(plan: Plan, opts: { onClose: () => void }): { el: HTMLElement; dispose: () => void } {
   const startedAt = Date.now();
@@ -35,7 +35,7 @@ export function workoutScreen(plan: Plan, opts: { onClose: () => void }): { el: 
       return `<span><i style="width:${p}%"></i></span>`;
     }).join('');
     return `<div class="row wk-top">
-      <button class="circ press" data-act="close" aria-label="Закончить">${icon('close')}</button>
+      <button class="circ press" data-act="close" aria-label="Завершить тренировку">${icon('close')}</button>
       <div style="flex:1"><div class="wk-prog">${segs}</div>
         <div class="t2" style="font-size:12px;font-weight:600;margin-top:6px">Упражнение ${ex + 1} из ${plan.exercises.length}</div></div>
       <div class="n wk-elapsed" data-el="elapsed">${clock((Date.now() - startedAt) / 1000)}</div>
@@ -58,23 +58,23 @@ export function workoutScreen(plan: Plan, opts: { onClose: () => void }): { el: 
       <div class="row big-row">
         <div><div class="eyebrow">Вес</div><div class="n big lime"><span data-el="w">${fmt(weight)}</span><span class="u">кг</span></div></div>
         <span class="sp"></span><div class="row" style="gap:10px">
-          <button class="circ step press" data-act="w-" aria-label="Меньше вес">${icon('minus')}</button>
-          <button class="circ step press" data-act="w+" aria-label="Больше вес">${icon('plus')}</button></div>
+          <button class="circ step press" data-act="w-" aria-label="Уменьшить вес">${icon('minus')}</button>
+          <button class="circ step press" data-act="w+" aria-label="Увеличить вес">${icon('plus')}</button></div>
       </div>
       <div class="hr"></div>
       <div class="row big-row">
-        <div><div class="eyebrow">Повторы <span class="t3">· цель ${e.reps[0]}–${e.reps[1]}</span></div><div class="n big"><span data-el="r">${reps}</span><span class="u">раз</span></div></div>
+        <div><div class="eyebrow">Повторения <span class="t3">· цель ${e.reps[0]}–${e.reps[1]}</span></div><div class="n big"><span data-el="r">${reps}</span><span class="u">повт.</span></div></div>
         <span class="sp"></span><div class="row" style="gap:10px">
-          <button class="circ step press" data-act="r-" aria-label="Меньше повторов">${icon('minus')}</button>
-          <button class="circ step press" data-act="r+" aria-label="Больше повторов">${icon('plus')}</button></div>
+          <button class="circ step press" data-act="r-" aria-label="Меньше повторений">${icon('minus')}</button>
+          <button class="circ step press" data-act="r+" aria-label="Больше повторений">${icon('plus')}</button></div>
       </div>
       <div class="hr"></div>
-      <div style="font-size:15px;font-weight:600;margin:16px 0 10px">Сколько ещё смог бы?</div>
-      <div class="rir-row" role="group" aria-label="Запас повторов">
+      <div style="font-size:15px;font-weight:600;margin:16px 0 10px">Запас повторений</div>
+      <div class="rir-row" role="group" aria-label="Запас повторений">
         ${RIR.map(([n, t], i) => `<button class="rir press" data-rir="${i}" aria-pressed="${rir === i}"><b class="n">${n}</b><span>${t}</span></button>`).join('')}
       </div></div>`;
-    dock.innerHTML = `<button class="gbtn hurt press" data-act="hurt">${icon('alert')}Больно</button>
-      <button class="btn press" style="flex:1" data-act="done">${icon('check')}Подход сделан</button>`;
+    dock.innerHTML = `<button class="gbtn hurt press" data-act="hurt">${icon('alert')}Боль</button>
+      <button class="btn press" style="flex:1" data-act="done">${icon('check')}Подход выполнен</button>`;
     dock.hidden = false;
   }
 
@@ -92,7 +92,7 @@ export function workoutScreen(plan: Plan, opts: { onClose: () => void }): { el: 
         <button class="gbtn press" style="flex:1" data-act="rest+"><span class="n" style="font-weight:600">+15 с</span></button>
       </div>
       <div class="card">
-        <div class="eyebrow">Дальше · ${logs[ex].length === 0 ? e.name.toLowerCase() : `подход ${setNo()} из ${e.sets}`}</div>
+        <div class="eyebrow">Далее · ${logs[ex].length === 0 ? e.name.toLowerCase() : `подход ${setNo()} из ${e.sets}`}</div>
         <div class="n" style="font-size:40px;margin-top:4px;letter-spacing:-1px">${fmt(weight)}<span class="u">кг</span> <span class="t3">×</span> ${reps}</div>
         ${note ? `<div class="note">${icon('bolt')}<span>${note}</span></div>` : ''}
       </div></div>`;
@@ -137,17 +137,17 @@ export function workoutScreen(plan: Plan, opts: { onClose: () => void }): { el: 
       ex += 1;
       weight = cur().weight;
       reps = cur().reps[0];
-      note = `Упражнение готово. Дальше — ${cur().name.toLowerCase()}.`;
+      note = `Упражнение завершено. Следующее — ${cur().name.toLowerCase()}.`;
     } else if (rir === 0) {
       weight -= e.step;
-      note = `Это был отказ — сбавлю на ${fmt(e.step)} кг, чтобы добрать повторы.`;
+      note = `Подход выполнен до отказа — вес снижен на ${fmt(e.step)} кг.`;
     } else if (rir === 3) {
       weight += e.step;
-      note = `Было легко — добавлю ${fmt(e.step)} кг.`;
+      note = `Подход был лёгким — вес увеличен на ${fmt(e.step)} кг.`;
     } else if (rir === 1) {
-      note = 'Подход был тяжёлым — вес не трогаю, держи технику.';
+      note = 'Подход был тяжёлым — вес сохранён. Следите за техникой.';
     } else {
-      note = 'Хороший запас — держим вес.';
+      note = 'Запас повторений достаточный — вес сохранён.';
     }
     rir = null;
     restEnd = Date.now() + restTotal * 1000;

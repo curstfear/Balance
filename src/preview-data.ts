@@ -34,12 +34,12 @@ export interface Plan {
 }
 
 const ALL: Exercise[] = [
-  { muscle: 'back', name: 'Подтягивания в гравитроне', sets: 4, reps: [8, 10], weight: -25, step: 5, why: 'Спина отстаёт по балансу недели', rest: 120 },
-  { muscle: 'back', name: 'Тяга штанги в наклоне', sets: 4, reps: [8, 10], weight: 62.5, step: 2.5, why: '+2,5 кг — прошлый раз было легко', up: true, rest: 120 },
-  { muscle: 'back', name: 'Тяга гантели одной рукой', sets: 3, reps: [10, 12], weight: 26, step: 2, why: 'Добираем объём спины', rest: 90 },
-  { muscle: 'shoulders', name: 'Обратные разведения', sets: 3, reps: [12, 15], weight: 8, step: 1, why: 'Задняя дельта: 5 дней без нагрузки', rest: 60 },
-  { muscle: 'arms', name: 'Сгибания со штангой', sets: 3, reps: [10, 12], weight: 30, step: 2.5, why: '+1 повтор к прошлому разу', up: true, rest: 75 },
-  { muscle: 'arms', name: 'Молотки с гантелями', sets: 2, reps: [10, 12], weight: 14, step: 2, why: 'Добираем объём бицепса', rest: 60 },
+  { muscle: 'back', name: 'Подтягивания в гравитроне', sets: 4, reps: [8, 10], weight: -25, step: 5, why: 'Спина отстаёт по недельному балансу', rest: 120 },
+  { muscle: 'back', name: 'Тяга штанги в наклоне', sets: 4, reps: [8, 10], weight: 62.5, step: 2.5, why: '+2,5 кг: в прошлый раз подходы были лёгкими', up: true, rest: 120 },
+  { muscle: 'back', name: 'Тяга гантели одной рукой', sets: 3, reps: [10, 12], weight: 26, step: 2, why: 'Добор недельного объёма спины', rest: 90 },
+  { muscle: 'shoulders', name: 'Обратные разведения', sets: 3, reps: [12, 15], weight: 8, step: 1, why: 'Задняя дельта не получала нагрузку 5 дней', rest: 60 },
+  { muscle: 'arms', name: 'Сгибания со штангой', sets: 3, reps: [10, 12], weight: 30, step: 2.5, why: '+1 повторение к прошлой тренировке', up: true, rest: 75 },
+  { muscle: 'arms', name: 'Молотки с гантелями', sets: 2, reps: [10, 12], weight: 14, step: 2, why: 'Добор недельного объёма бицепса', rest: 60 },
 ];
 
 /** Shorter/longer variants — the engine will do this properly; here we just trim the list. */
@@ -50,7 +50,7 @@ export function planFor(minutes: 45 | 55 | 70): Plan {
   return {
     title: 'Спина и бицепс',
     muscles: [{ id: 'back', name: 'Спина' }, { id: 'arms', name: 'Бицепс' }, { id: 'shoulders', name: 'Задняя дельта' }],
-    reason: 'Спину не нагружали 6 дней — она отстаёт сильнее всего.',
+    reason: 'Спина не получала нагрузку 6 дней и сильнее всего отстаёт по недельному объёму.',
     exercises,
   };
 }
