@@ -1,4 +1,4 @@
-const PATHS = {
+export const ICON_PATHS = {
   chevR: '<path d="M9 5.5l6.5 6.5L9 18.5" stroke-width="2.4"/>',
   chevL: '<path d="M15 4.5L7.5 12l7.5 7.5" stroke-width="2.6"/>',
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/>',
@@ -20,8 +20,4 @@ const PATHS = {
   trendUp: '<path d="M4 17l6-6 4 4 6-7M15 8h5v5" stroke-width="2.4"/>',
 } as const;
 
-export type IconName = keyof typeof PATHS;
-
-export function icon(name: IconName, cls = '', style = ''): string {
-  return `<span class="ic ${cls}" style="${style}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${PATHS[name]}</svg></span>`;
-}
+export type IconName = keyof typeof ICON_PATHS;
