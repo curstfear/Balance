@@ -12,6 +12,9 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 
 /* ---------- app shell + navigation ---------- */
 #app { position: fixed; inset: 0; max-width: 440px; margin: 0 auto; overflow: hidden; background: var(--bg); }
+/* iOS 26.1+ home-screen apps report a too-short viewport, so `inset: 0` stops above the
+   bottom edge and leaves a black strip. 100vh/100lvh is the full screen height there. */
+.standalone #app { bottom: auto; height: 100vh; height: 100lvh; }
 .screen {
   position: absolute; inset: 0; background: var(--bg); overflow: hidden;
   transition: transform .5s var(--ease-ios), filter .5s var(--ease-ios);
@@ -62,11 +65,11 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .navbar .ic { width: 24px; height: 24px; }
 
 /* bottom action dock (pushed screens) */
-.dock { position: absolute; left: 0; right: 0; bottom: 0; padding: 40px var(--gutter) calc(var(--safe-bottom) + 16px); background: linear-gradient(180deg, transparent, var(--bg) 45%); z-index: 20; display: flex; gap: 10px; }
+.dock { position: absolute; left: 0; right: 0; bottom: 0; padding: 40px var(--gutter) max(16px, calc(var(--safe-bottom) - 6px)); background: linear-gradient(180deg, transparent, var(--bg) 45%); z-index: 20; display: flex; gap: 10px; }
 
 /* liquid glass tab bar */
 .tabbar {
-  position: absolute; left: 14px; right: 14px; bottom: calc(var(--safe-bottom) + 10px);
+  position: absolute; left: 14px; right: 14px; bottom: max(10px, calc(var(--safe-bottom) - 8px));
   height: 66px; border-radius: 33px; background: var(--glass);
   -webkit-backdrop-filter: blur(22px) saturate(180%); backdrop-filter: blur(22px) saturate(180%);
   box-shadow: inset 0 0 0 .7px var(--glass-stroke);
