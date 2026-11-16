@@ -1,0 +1,27 @@
+const PATHS = {
+  chevR: '<path d="M9 5.5l6.5 6.5L9 18.5" stroke-width="2.4"/>',
+  chevL: '<path d="M15 4.5L7.5 12l7.5 7.5" stroke-width="2.6"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/>',
+  bolt: '<path d="M13.5 2L4 14h7l-1.5 8L20 10h-7l.5-8z" fill="currentColor" stroke="none"/>',
+  play: '<path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.4-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z" fill="currentColor" stroke="none"/>',
+  home: '<path d="M3.5 10.2L12 3.5l8.5 6.7V19a1.5 1.5 0 0 1-1.5 1.5h-4.5v-6h-5v6H5A1.5 1.5 0 0 1 3.5 19z"/>',
+  cal: '<rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+  chart: '<path d="M5.5 20v-7M12 20V5M18.5 20v-10" stroke-width="2.8"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c1.4-3.8 4.2-5.6 7.5-5.6s6.1 1.8 7.5 5.6"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5" stroke-width="2.8"/>',
+  plus: '<path d="M12 5v14M5 12h14" stroke-width="2.6"/>',
+  minus: '<path d="M5 12h14" stroke-width="2.6"/>',
+  close: '<path d="M6 6l12 12M18 6L6 18" stroke-width="2.6"/>',
+  pulse: '<path d="M3 12.5h4l2.2-5.5 4.2 11 2.4-5.5H21" stroke-width="2.4"/>',
+  stack: '<path d="M12 3.5l8.5 4.5-8.5 4.5L3.5 8z"/><path d="M3.5 12.2l8.5 4.5 8.5-4.5M3.5 16.2l8.5 4.5 8.5-4.5"/>',
+  alert: '<circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.6v.2" stroke-width="2.6"/>',
+  swap: '<path d="M7 4L4 7l3 3M4 7h12.5M17 20l3-3-3-3M20 17H7.5"/>',
+  flame: '<path d="M12 21c-4 0-6.5-2.6-6.5-6 0-3.6 2.8-5.2 3.6-8.7 2.3 1.4 3.2 3.4 3.3 5.2 1-.7 1.6-2 1.7-3.3 2.4 1.9 4.4 4.4 4.4 7 0 3.3-2.5 5.8-6.5 5.8z"/>',
+  trendUp: '<path d="M4 17l6-6 4 4 6-7M15 8h5v5" stroke-width="2.4"/>',
+} as const;
+
+export type IconName = keyof typeof PATHS;
+
+export function icon(name: IconName, cls = '', style = ''): string {
+  return `<span class="ic ${cls}" style="${style}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${PATHS[name]}</svg></span>`;
+}

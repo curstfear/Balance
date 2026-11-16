@@ -19,6 +19,13 @@
 - [docs/data-model.md](docs/data-model.md) — сущности IndexedDB, что хранится, а что вычисляется, бэкап.
 - [docs/roadmap.md](docs/roadmap.md) — этапы, MVP, открытые вопросы.
 
+## Запуск
+- `npm i` → `npm run dev` (локально, `--host` — открыть с iPhone по Wi-Fi), `npm run build` — tsc + сборка в `dist/`.
+- Деплой: пуш в `main` → GitHub Actions ([.github/workflows/pages.yml](.github/workflows/pages.yml)) → https://curstfear.github.io/Balance/
+- Сейчас в `src/` — превью дизайна (Vite + TS без фреймворка): «Сегодня» → план → подход → отдых.
+  Данные — заглушки в `src/preview-data.ts`; токены дизайна — `src/styles/tokens.css`.
+- Дизайн: flat, без бликов и «реалистичных» градиентов; свечение — только на карточках-героях с иллюстрацией.
+
 ## Правила
 - Движок тренировок — **чистые функции без UI и IndexedDB**, покрыт тестами из docs/engine/test-scenarios.md.
   Правило меняется сначала в docs/engine/, потом в коде.
