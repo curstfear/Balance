@@ -1,0 +1,95 @@
+# Каталог: мышцы, паттерны, упражнения
+
+Каталог — фундамент качества тренировок. Черновик разметки готовит Claude, владелец проверяет.
+Знак `?` — неуверенная оценка, проверить. Вклады — прагматичный консенсус (механика + ЭМГ + практика), не измерения.
+
+## Мышцы (16 групп)
+| id | Группа | Размер | τ, ч (load §7) |
+|---|---|---|---|
+| chest | Грудь | крупная | 30 |
+| delt_front | Передняя дельта | мелкая | 20 |
+| delt_side | Средняя дельта | мелкая | 20 |
+| delt_rear | Задняя дельта | мелкая | 20 |
+| lats | Широчайшие | крупная | 30 |
+| upper_back | Верх спины / трапеции | крупная | 30 |
+| biceps | Бицепс | мелкая | 20 |
+| triceps | Трицепс | мелкая | 20 |
+| forearms | Предплечья | мелкая | 20 |
+| abs | Пресс | мелкая | 20 |
+| lower_back | Разгибатели спины | крупная | 36 |
+| glutes | Ягодицы | крупная | 30 |
+| quads | Квадрицепс | крупная | 30 |
+| hamstrings | Бицепс бедра | крупная | 30 |
+| adductors | Приводящие | средняя | 30 |
+| calves | Икры | мелкая | 20 |
+
+## Паттерны
+`h_push, incline_push, v_push, chest_fly, h_pull, v_pull, shoulder_ext, lateral_raise, rear_delt, shrug,
+squat, hinge, hip_thrust, single_leg, knee_ext, knee_flex, hip_add, hip_abd, calf, elbow_flex, elbow_ext,
+core_flex, core_anti_ext, core_anti_rot, carry`
+
+Семейства для баланса: **push** (h_push, incline_push, v_push, chest_fly, elbow_ext) ·
+**pull** (h_pull, v_pull, shoulder_ext, rear_delt, shrug, elbow_flex) · **quad** (squat, single_leg, knee_ext) ·
+**posterior** (hinge, hip_thrust, knee_flex) · **core**.
+
+## Вклад мышц и атрибуты основных упражнений
+F — fatigue (1–3), Ось — axial, Длина — lengthBias.
+| Упражнение | Вклад | F | Ось | Длина |
+|---|---|---|---|---|
+| Жим штанги лёжа | chest 1, triceps .5, delt_front .5 | 2 | low | mid |
+| Жим гантелей на наклонной | chest 1, delt_front .75, triceps .5 | 2 | none | long |
+| Жим стоя | delt_front 1, triceps .75, delt_side .5?, upper_back .25, abs .25 | 2 | moderate | mid |
+| Махи гантелями в стороны | delt_side 1, upper_back .25 | 1 | none | short (на блоке — mid/long) |
+| Подтягивания | lats 1, upper_back .5, biceps .5, delt_rear .25, forearms .25, abs .25 | 2 | none | long |
+| Тяга верхнего блока | lats 1, upper_back .5, biceps .5, delt_rear .25 | 1 | none | long |
+| Тяга нижнего блока (узкая нейтр.) | upper_back 1, lats .75, delt_rear .5, biceps .5 | 1 | none | long |
+| Тяга с упором грудью | upper_back 1, lats .5?, delt_rear .5, biceps .5 (локти в стороны: delt_rear .75, lats .25) | 1 | none | mid |
+| Тяга штанги в наклоне | upper_back 1, lats .75, delt_rear .5, biceps .5, lower_back .5, hamstrings .25, forearms .25 | 3 | moderate | mid |
+| Присед со штангой | quads 1, glutes .75, adductors .75, lower_back .5, abs .25 | 3 | high | long |
+| Жим ногами | quads 1, glutes .5, adductors .5 | 2 | none | mid/long |
+| Румынская тяга | hamstrings 1, glutes .75, adductors .5, lower_back .5, upper_back .25, forearms .25 | 3 | moderate | long |
+| Ягодичный мост | glutes 1, hamstrings .25, adductors .25, quads .25? | 2 | low | short |
+| Сгибание ног лёжа | hamstrings 1, calves .25 | 1 | none | mid |
+| Сгибание ног сидя | hamstrings 1, calves .25 | 1 | none | long |
+| Разгибание ног | quads 1 | 1 | none | short |
+| Болгарские выпады | quads 1, glutes .75, adductors .5 | 2 | low | long |
+| Подъём на носки стоя / сидя | calves 1 | 1 | low / none | long |
+| Сгибания на бицепс | biceps 1, forearms .25 | 1 | none | mid (на наклонной — long) |
+| Молотки | biceps .75, forearms .75 | 1 | none | mid |
+| Разгибания на блоке вниз | triceps 1 | 1 | none | short |
+| Разгибания из-за головы | triceps 1 | 1 | none | long |
+| Тяга каната к лицу | delt_rear 1, upper_back .75, delt_side .25? | 1 | none | mid |
+| Обратная бабочка | delt_rear 1, upper_back .5 | 1 | none | mid |
+| Становая тяга | lower_back 1, glutes .75, hamstrings .5, quads .5, adductors .5, upper_back .5, forearms .5, lats .25 | 3 | high | mid |
+| Брусья | chest 1, triceps .75, delt_front .5 | 2 | none | long |
+| Сведение в кроссовере | chest 1, delt_front .25 | 1 | none | long |
+
+Вторичные мышцы по умолчанию для своих упражнений (шаблон паттерна): h_push → triceps .5, delt_front .5;
+v_pull → upper_back .5, biceps .5; h_pull → lats .5, delt_rear .5, biceps .5; squat → glutes .5, adductors .5;
+hinge → glutes .75, lower_back .5; и т. д. — заполняется при разметке.
+
+## Стартовый каталог (~65)
+| Паттерн | Упражнения |
+|---|---|
+| h_push | Жим штанги лёжа · Жим гантелей лёжа · Жим в тренажёре · Отжимания · Брусья |
+| incline_push | Жим гантелей на наклонной · Жим в Смите на наклонной |
+| chest_fly | Сведение в кроссовере · Бабочка |
+| v_push | Жим стоя · Жим гантелей сидя · Жим в тренажёре |
+| lateral_raise | Махи гантелями · Махи на блоке · Махи в тренажёре |
+| v_pull | Подтягивания · Гравитрон · Тяга верхнего блока · Тяга верхнего блока одной рукой |
+| shoulder_ext | Пуловер на блоке |
+| h_pull | Тяга штанги в наклоне · Тяга гантели одной рукой · Тяга нижнего блока · Тяга с упором грудью · Рычажная тяга · Австралийские подтягивания |
+| rear_delt / shrug | Тяга к лицу · Обратная бабочка · Разведения в наклоне · Шраги |
+| squat | Присед со штангой · Гоблет-присед · Жим ногами · Гакк-присед · Присед в Смите |
+| hinge | Становая · Румынская тяга (штанга) · Румынская с гантелями · Гиперэкстензия 45° |
+| hip_thrust | Ягодичный мост со штангой · Мост в тренажёре · Ягодичный мостик |
+| single_leg | Болгарские выпады · Выпады назад · Зашагивания · Румынская на одной ноге |
+| knee_flex / knee_ext | Сгибание ног сидя · Сгибание лёжа · Нордические · Разгибание ног |
+| hip_add / hip_abd | Сведение ног · Разведение ног |
+| calf | Носки стоя · Носки сидя · Носки в жиме ногами |
+| elbow_flex | Сгибания EZ · На наклонной скамье · Молотки · Скамья Скотта · На блоке |
+| elbow_ext | Разгибания на блоке · Из-за головы на блоке · Французский жим · Гантель из-за головы · Жим узким хватом |
+| core | Планка · Скручивания на блоке · Подъём коленей в висе · Паллоф-жим · Прогулка фермера · Dead bug · Боковая планка · Bird-dog |
+
+Для каждого упражнения при разметке заполнить все поля схемы ([exercise-selection §1](exercise-selection.md)),
+включая противопоказания по зонам ([safety §3](safety.md)), картинку и 2–3 подсказки по технике.
