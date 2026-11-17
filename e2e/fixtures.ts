@@ -11,6 +11,7 @@ export const test = base.extend<{ errors: string[] }>({
   }, { auto: true }],
 });
 export { expect };
+export type { Page } from '@playwright/test';
 
 export const screens = (page: Page) => page.locator('section.screen');
 export const button = (page: Page, name: string) => page.getByRole('button', { name, exact: true });

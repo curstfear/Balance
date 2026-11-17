@@ -9,12 +9,14 @@
   import Dock from '../components/Dock.svelte';
   import Icon from '../components/Icon.svelte';
   import RestRing from '../components/RestRing.svelte';
+  import Sheet from '../components/Sheet.svelte';
+  import Stop from './Stop.svelte';
   import type { Plan } from '../../preview-data';
-  import { closeTo, haptic } from '../nav.svelte';
+  import { closeTo, push, haptic } from '../nav.svelte';
   import { fmt, clock } from '../format';
-  import { t } from '../strings';
+  import { t, type PainLevel } from '../strings';
 
-  interface SetLog { w: number; r: number; rir: number | null }
+  interface SetLog { w: number; r: number; rir: number | null; pain: PainLevel | null }
 
   let { plan }: { plan: Plan } = $props();
   const exercises = untrack(() => plan.exercises); // fixed for the whole workout
@@ -25,6 +27,8 @@
   let weight = $state(exercises[0].weight);
   let reps = $state(exercises[0].reps[0]);
   let rir = $state<number | null>(null);
+  let pain = $state<PainLevel | null>(null);
+  let painOpen = $state(false);
   let phase = $state<'set' | 'rest' | 'done'>('set');
   let restEnd = $state(0);
   let restTotal = $state(0);
@@ -40,16 +44,23 @@
 
   function completeSet() {
     const e = cur;
-    logs[ex].push({ w: weight, r: reps, rir });
+    logs[ex].push({ w: weight, r: reps, rir, pain });
     haptic(20);
-    const lastOfExercise = logs[ex].length >= e.sets;
+    // preview rules; the engine (stage 3) replaces them with docs/engine/safety.md §2
+    const acute = pain === 'acute';
+    const lastOfExercise = acute || logs[ex].length >= e.sets;
     if (lastOfExercise && ex === exercises.length - 1) { phase = 'done'; return; }
 
     if (lastOfExercise) {
       ex += 1;
       weight = exercises[ex].weight;
       reps = exercises[ex].reps[0];
-      note = t.workout.notes.exerciseDone(exercises[ex].name.toLowerCase());
+      note = acute
+        ? `${t.pain.notes.acute} ${t.workout.notes.exerciseDone(exercises[ex].name.toLowerCase())}`
+        : t.workout.notes.exerciseDone(exercises[ex].name.toLowerCase());
+    } else if (pain === 'tolerable') {
+      weight -= e.step;
+      note = t.pain.notes.tolerable(fmt(e.step));
     } else if (rir === 0) {
       weight -= e.step;
       note = t.workout.notes.failure(fmt(e.step));
@@ -60,6 +71,7 @@
       note = rir === 1 ? t.workout.notes.hard : t.workout.notes.ok;
     }
     rir = null;
+    pain = null;
     restTotal = e.rest;
     restEnd = Date.now() + restTotal * 1000;
     now = Date.now();
@@ -123,7 +135,7 @@
         <div class="row sets">
           {#each Array(cur.sets) as _, i (i)}
             {#if logs[ex][i]}
-              <Chip variant="done"><Icon name="check" size={14} color="var(--lime)" /><span class="n">{logs[ex][i].r} × {fmt(logs[ex][i].w)}</span></Chip>
+              <Chip variant="done"><Icon name="check" size={14} color="var(--lime)" /><span class="n">{logs[ex][i].r} × {fmt(logs[ex][i].w)}</span>{#if logs[ex][i].pain === 'tolerable' || logs[ex][i].pain === 'acute'}<span class="dot pain-{logs[ex][i].pain}"></span>{/if}</Chip>
             {:else if i === done}
               <Chip variant="accent">{t.workout.set(i + 1)}</Chip>
             {:else}
@@ -192,12 +204,29 @@
 
 {#if phase === 'set'}
   <Dock>
-    <Button variant="danger" icon="alert">{t.workout.pain}</Button>
+    <Button variant="danger" icon="alert" onclick={() => (painOpen = true)}>{pain ? `${t.pain.button} · ${t.pain.options.find((o) => o.level === pain)?.scale}` : t.pain.button}</Button>
     <Button icon="check" grow onclick={completeSet}>{t.workout.setDone}</Button>
   </Dock>
 {:else if phase === 'done'}
   <Dock><Button grow onclick={() => closeTo(0)}>{t.workout.close}</Button></Dock>
 {/if}
+
+<Sheet open={painOpen} title={t.pain.title} subtitle={t.pain.subtitle(cur.name, done + 1)} onclose={() => (painOpen = false)}>
+  <div class="opts" role="radiogroup" aria-label={t.pain.title}>
+    {#each t.pain.options as o (o.level)}
+      <button class="opt press pain-{o.level}" role="radio" aria-checked={pain === o.level}
+        onclick={() => { pain = o.level === 'none' ? null : o.level; painOpen = false; haptic(); }}>
+        <span class="scale n">{o.scale}</span>
+        <span><b>{o.name}</b><span class="d">{o.note}</span></span>
+      </button>
+    {/each}
+  </div>
+  <div class="flags">
+    <div class="ft"><Icon name="alert" size={18} />{t.pain.flagsTitle}</div>
+    <p>{t.pain.flagsText}</p>
+    <Button variant="alarm" size="m" grow onclick={() => { painOpen = false; push(Stop, {}, 'modal'); }}>{t.pain.flagsAction}</Button>
+  </div>
+</Sheet>
 
 <style>
   .top { height: 48px; gap: 12px; margin-top: 4px; }
@@ -232,4 +261,27 @@
   .stat .n { font-size: 30px; }
   .bl { border-left: .5px solid var(--sep); }
   .bt { border-top: .5px solid var(--sep); }
+  .dot.pain-tolerable { background: var(--yellow); }
+  .dot.pain-acute { background: var(--red); }
+  .opts { margin-top: 6px; }
+  .opt { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; padding: 14px; border-radius: 20px; background: var(--fill2); margin-top: 8px; }
+  .opt[aria-checked='true'] { box-shadow: inset 0 0 0 2px currentColor; }
+  .opt b { display: block; font-size: 17px; font-weight: 600; letter-spacing: -.2px; color: var(--t1); }
+  .opt .d { display: block; font-size: 13px; line-height: 17px; color: var(--t2); margin-top: 2px; }
+  .scale { width: 52px; height: 44px; border-radius: 14px; flex: none; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+  .pain-none { color: var(--green); }
+  .pain-none .scale { background: rgba(52, 199, 89, .16); }
+  .pain-tolerable { color: var(--yellow); }
+  .pain-tolerable .scale { background: rgba(255, 214, 10, .16); }
+  .pain-acute { color: #FF6961; }
+  .pain-acute .scale { background: rgba(255, 69, 58, .18); }
+  @media (prefers-color-scheme: light) {
+    .pain-none { color: #1F8A3B; }
+    .pain-tolerable { color: #9A7400; }
+    .pain-acute { color: #D70015; }
+    .flags .ft { color: #D70015; }
+  }
+  .flags { margin-top: 14px; padding: 14px; border-radius: 20px; background: rgba(255, 69, 58, .12); }
+  .ft { display: flex; align-items: center; gap: 8px; color: #FF6961; font-weight: 650; font-size: 15px; }
+  .flags p { font-size: 14px; line-height: 19px; margin: 6px 0 12px; }
 </style>

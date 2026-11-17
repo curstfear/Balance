@@ -4,21 +4,28 @@
   import type { IconName } from '../icons';
 
   type Props = {
-    variant?: 'primary' | 'secondary' | 'danger';
+    variant?: 'primary' | 'secondary' | 'danger' | 'alarm';
     size?: 'l' | 'm';
     icon?: IconName;
     grow?: boolean;
     label?: string;
+    href?: string;
     onclick?: () => void;
     children: Snippet;
   };
-  let { variant = 'primary', size = 'l', icon, grow = false, label, onclick, children }: Props = $props();
+  let { variant = 'primary', size = 'l', icon, grow = false, label, href, onclick, children }: Props = $props();
 </script>
 
-<button class="btn {variant} {size} press" class:grow aria-label={label} {onclick}>
+{#snippet inner()}
   {#if icon}<Icon name={icon} size={18} />{/if}
   {@render children()}
-</button>
+{/snippet}
+
+{#if href}
+  <a class="btn {variant} {size} press" class:grow aria-label={label} {href} {onclick}>{@render inner()}</a>
+{:else}
+  <button class="btn {variant} {size} press" class:grow aria-label={label} {onclick}>{@render inner()}</button>
+{/if}
 
 <style>
   .btn {
@@ -31,4 +38,6 @@
   .primary { background: var(--lime); color: var(--lime-ink); font-weight: 650; }
   .secondary { background: var(--fill); color: var(--t1); }
   .danger { background: rgba(255, 69, 58, .16); color: #FF6961; }
+  .alarm { background: var(--red); color: #fff; }
+  a { text-decoration: none; }
 </style>
