@@ -34,6 +34,7 @@ function entry<P extends Record<string, unknown>>(component: Component<P>, props
 
 export function setRoot<P extends Record<string, unknown>>(component: Component<P>, props: P) {
   nav.stack = [entry(component, props, 'root', 'active')];
+  prune();
 }
 
 export async function push<P extends Record<string, unknown>>(component: Component<P>, props: P, kind: 'push' | 'modal' = 'push', instant = false) {
@@ -66,7 +67,7 @@ export function pop() {
   leaving.pos = 'enter';
   prev.pos = 'active';
   const id = leaving.id;
-  setTimeout(() => { nav.stack = nav.stack.filter((e) => e.id !== id); }, DURATION);
+  setTimeout(() => { nav.stack = nav.stack.filter((e) => e.id !== id); prune(); }, DURATION);
 }
 
 /** Dismiss the top screen straight down to `depth`, dropping the screens in between (workout → home). */
@@ -110,7 +111,19 @@ const SLOP = 8;
 const BEHIND = 28; // % the screen underneath is shifted left
 const EDGE = 24; // px: a swipe from the left edge always goes back
 
+// One attachment per screen. Svelte re-runs {@attach} whenever it gets a new function — and it re-evaluates
+// it each time nav.stack changes (e.g. when a popped screen is removed 0.5 s later). A new function would
+// tear the listeners down in the middle of a swipe: the gesture dies and the screen stays shifted.
+const attachments = new Map<number, (node: HTMLElement) => () => void>();
+const prune = () => { for (const id of attachments.keys()) if (!nav.stack.some((e) => e.id === id)) attachments.delete(id); };
+
 export function swipeBack(e: Entry) {
+  let a = attachments.get(e.id);
+  if (!a) attachments.set(e.id, (a = swipeBackFor(e)));
+  return a;
+}
+
+function swipeBackFor(e: Entry) {
   return (node: HTMLElement) => {
     let mode: 'idle' | 'track' | 'drag' = 'idle';
     let sx = 0, sy = 0, w = 1;

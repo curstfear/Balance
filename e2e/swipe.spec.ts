@@ -52,13 +52,14 @@ async function openCard(page: import('@playwright/test').Page) {
   await page.getByRole('button', { name: /^Упражнения/ }).tap();
   await page.waitForTimeout(600);
   await page.getByRole('button', { name: 'Открыть: Жим штанги лёжа', exact: true }).tap();
-  await page.waitForTimeout(600);
   await expect(screens(page)).toHaveCount(3);
+  // wait until the card has fully slid in: on a slow machine a swipe that starts mid-animation misses it
+  await expect(screens(page).last()).toHaveCSS('transform', 'none');
 }
 
 test('a second swipe back right after the first one works (no dead time while the screen slides away)', async ({ page }) => {
   await openCard(page);
-  await swipe(page, [150, 450], [330, 455]);
+  expect(await swipe(page, [150, 450], [330, 455])).toBeGreaterThan(0);
   await page.waitForTimeout(120); // the card is still sliding out
   expect(await swipe(page, [150, 450], [330, 455])).toBeGreaterThan(0);
   await page.waitForTimeout(700);
@@ -68,7 +69,7 @@ test('a second swipe back right after the first one works (no dead time while th
 
 test('the screen underneath takes taps right after going back', async ({ page }) => {
   await openCard(page);
-  await swipe(page, [150, 450], [330, 455]);
+  expect(await swipe(page, [150, 450], [330, 455])).toBeGreaterThan(0);
   await page.waitForTimeout(100);
   await page.getByRole('button', { name: 'Открыть: Жим гантелей лёжа', exact: true }).tap();
   await page.waitForTimeout(600);
@@ -88,4 +89,17 @@ test('swiping a sideways strip scrolls it instead of going back; the left edge s
   expect(await swipe(page, [8, y], [300, y + 2])).toBeGreaterThan(0);
   await page.waitForTimeout(700);
   await expect(screens(page)).toHaveCount(2);
+});
+
+test('a slow swipe keeps working while the previous screen is removed from the stack', async ({ page }) => {
+  await openCard(page);
+  expect(await swipe(page, [150, 450], [330, 455])).toBeGreaterThan(0);
+  await page.waitForTimeout(100);
+  // ~0.9 s: the card that slid away is removed from the stack in the middle of this gesture
+  const steps = 30;
+  expect(await swipe(page, [150, 450], [330, 455], { steps, dt: 30 })).toBe(steps - 1); // every move after the slop is handled
+  await page.waitForTimeout(700);
+  await expect(screens(page)).toHaveCount(1);
+  const inline = await screens(page).evaluateAll((els) => els.map((e) => (e as HTMLElement).style.transform));
+  expect(inline.every((v) => v === '')).toBe(true);
 });
