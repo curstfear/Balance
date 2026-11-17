@@ -5,7 +5,6 @@
   import Flower from '../components/Flower.svelte';
   import WeekStrip from '../components/WeekStrip.svelte';
   import TabBar from '../components/TabBar.svelte';
-  import Plan from './Plan.svelte';
   import InstallHint from '../components/InstallHint.svelte';
   import StorageBanner from '../components/StorageBanner.svelte';
   import AnimatedCheck from '../components/AnimatedCheck.svelte';
@@ -13,8 +12,8 @@
   import { swipeAway } from '../gestures';
   import { storage } from '../../data/storage.svelte';
   import { MUSCLES, weekBalance, planFor, totals } from '../../preview-data';
-  import { push, haptic } from '../nav.svelte';
   import { t, plural, FORMS } from '../strings';
+  import { goTab, startWorkout } from '../tabs';
 
   const now = new Date();
   const plan = planFor(55);
@@ -23,11 +22,7 @@
 
   const dismissAuto = () => { storage.autoClosed = false; };
 
-  function start() {
-    haptic(15);
-    storage.autoClosed = false;
-    push(Plan, {});
-  }
+  const start = startWorkout;
 </script>
 
 <div class="scroll">
@@ -105,7 +100,7 @@
   </div>
 </div>
 
-<TabBar active="today" onstart={start} />
+<TabBar active="today" onstart={start} onselect={goTab} />
 
 <style>
   .head { margin-top: 10px; }

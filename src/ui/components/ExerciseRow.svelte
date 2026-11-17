@@ -4,16 +4,16 @@
   import { fmt } from '../format';
   import { t } from '../strings';
 
-  let { exercise: e, index }: { exercise: Exercise; index: number } = $props();
+  let { exercise: e, index, onopen }: { exercise: Exercise; index: number; onopen?: () => void } = $props();
 </script>
 
 <div class="li">
   <div class="badge" style="--c:var(--c-{e.muscle})">{index}</div>
-  <div class="body">
+  <button class="body" aria-label={t.catalog.open(e.name)} onclick={onopen}>
     <div class="nm">{e.name}</div>
     <div class="sub"><span class="n">{e.sets} × {e.reps[0]}{e.reps[1] !== e.reps[0] ? '–' + e.reps[1] : ''}</span> · <span class="n">{fmt(e.weight)}</span>&nbsp;{t.units.kg}</div>
     <div class="why" class:up={e.up}><Icon name={e.up ? 'trendUp' : 'bolt'} size={13} />{e.why}</div>
-  </div>
+  </button>
   <button class="swap press" aria-label="{t.plan.replace}: {e.name}"><Icon name="swap" /></button>
 </div>
 
@@ -25,7 +25,8 @@
     display: flex; align-items: center; justify-content: center; font: 700 15px var(--font-num);
     background: color-mix(in srgb, var(--c) 20%, transparent); color: var(--c);
   }
-  .body { flex: 1; min-width: 0; }
+  .body { flex: 1; min-width: 0; text-align: left; }
+  .body:active .nm { opacity: .6; }
   .nm { font-size: 16px; font-weight: 600; letter-spacing: -.25px; }
   .sub { font-size: 15px; color: var(--t2); margin-top: 2px; }
   .sub .n { font-weight: 600; color: var(--t1); }

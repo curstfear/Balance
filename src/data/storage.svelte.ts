@@ -108,3 +108,16 @@ export function hideInstallHint(now = Date.now()) {
   storage.installHint = false;
   write((d) => updateSettings(d, { installHintHiddenUntil: now + INSTALL_HINT_PAUSE_MS }));
 }
+
+/** Read through the open connection after launch; null when storage is unavailable or the read fails. */
+export async function read<T>(fn: (db: BalanceDB) => Promise<T>): Promise<T | null> {
+  await storageReady;
+  const d = db;
+  if (!d) return null;
+  try {
+    return await fn(d);
+  } catch (e) {
+    console.warn('[storage] read failed', e);
+    return null;
+  }
+}

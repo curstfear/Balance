@@ -19,6 +19,10 @@ export const ICON_PATHS = {
   swap: '<path d="M7 4L4 7l3 3M4 7h12.5M17 20l3-3-3-3M20 17H7.5"/>',
   flame: '<path d="M12 21c-4 0-6.5-2.6-6.5-6 0-3.6 2.8-5.2 3.6-8.7 2.3 1.4 3.2 3.4 3.3 5.2 1-.7 1.6-2 1.7-3.3 2.4 1.9 4.4 4.4 4.4 7 0 3.3-2.5 5.8-6.5 5.8z"/>',
   trendUp: '<path d="M4 17l6-6 4 4 6-7M15 8h5v5" stroke-width="2.4"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21" stroke-width="2.4"/>',
+  list: '<path d="M9 6h11M9 12h11M9 18h11" stroke-width="2.2"/><circle cx="4.5" cy="6" r="1.2" fill="currentColor" stroke="none"/><circle cx="4.5" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="4.5" cy="18" r="1.2" fill="currentColor" stroke="none"/>',
+  book: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/>',
+  xFill: '<circle cx="12" cy="12" r="9" fill="currentColor" stroke="none"/><path d="M9 9l6 6M15 9l-6 6" stroke="var(--bg)" stroke-width="2"/>',
 } as const;
 
 export type IconName = keyof typeof ICON_PATHS;

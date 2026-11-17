@@ -25,12 +25,13 @@ Exercise {
   gripLimited: bool
   load: external | bodyweight | bodyweight_plus | assisted
   setupSec: number                 // по умолч. из equipClass: тренажёр 45, блок 45, гантели 60, штанга 120
-  supersetOk: bool                 // false при axial ≥ moderate и skill 3
+  supersetOk: bool                 // false при axial ≥ moderate или skill 3 (§7)
   repRange?: {strength, hyper}     // переопределение
   minExperience: novice | intermediate | advanced
   contraindications: [{zone, level: avoid | modify}]
   transferGroup: string            // для коэффициентов перехода веса между упражнениями
-  technique: {img, cues[2–3]}
+  weightStep?: number | null       // кг; по умолч. из equipClass (catalog.md «Шаг веса»), null — прогрессия повторами
+  technique: {art?: {id, first}, cues[2–3]}   // art — рисунок Everkinetic (начало/конец), см. catalog.md «Изображения»
   custom: bool, dataSource: curated | user | inferred
 }
 ```

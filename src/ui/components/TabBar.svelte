@@ -4,14 +4,14 @@
   import { t } from '../strings';
 
   type Tab = 'today' | 'history' | 'progress' | 'profile';
-  let { active, onstart }: { active: Tab; onstart: () => void } = $props();
+  let { active, onstart, onselect }: { active: Tab; onstart: () => void; onselect?: (tab: Tab) => void } = $props();
 
   const left: [Tab, IconName][] = [['today', 'home'], ['history', 'cal']];
   const right: [Tab, IconName][] = [['progress', 'chart'], ['profile', 'user']];
 </script>
 
 {#snippet tab(id: Tab, icon: IconName)}
-  <button class="tab press" aria-current={active === id ? 'page' : undefined}><Icon name={icon} size={25} />{t.tabs[id]}</button>
+  <button class="tab press" aria-current={active === id ? 'page' : undefined} onclick={() => id !== active && onselect?.(id)}><Icon name={icon} size={25} />{t.tabs[id]}</button>
 {/snippet}
 
 <div class="fade" aria-hidden="true"></div>

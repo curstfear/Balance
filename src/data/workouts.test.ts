@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { BalanceDB } from './db';
 import {
-  autoCloseWorkout, buildWorkout, finishWorkout, loadWorkout, logSet, planFromWorkout, resolveOnLaunch, saveCursor,
+  autoCloseWorkout, buildWorkout, finishWorkout, loadWorkout, logSet, planFromWorkout, profileStats, resolveOnLaunch, saveCursor,
   saveNewWorkout, RESUME_WINDOW_MS, type PlanInput, type SetInput,
 } from './workouts';
 import type { Cursor } from './schema';
@@ -176,5 +176,20 @@ describe('planFromWorkout', () => {
   it('round-trips', async () => {
     const d = buildWorkout(plan, T0);
     expect(planFromWorkout(d)).toEqual(plan);
+  });
+});
+
+describe('profileStats', () => {
+  it('empty database', async () => {
+    expect(await profileStats(db)).toEqual({ workouts: 0, sets: 0, since: null });
+  });
+  it('counts finished workouts and their work sets only', async () => {
+    const a = await start(T0);
+    await logSet(db, input(a, 1, T0 + 60_000), cur());
+    await logSet(db, input(a, 2, T0 + 120_000), cur());
+    await finishWorkout(db, a.workout.id, T0 + 200_000);
+    const b = await start(T0 + 86_400_000); // still active — not counted
+    await logSet(db, input(b, 1, T0 + 86_460_000), cur());
+    expect(await profileStats(db)).toEqual({ workouts: 1, sets: 2, since: T0 });
   });
 });
