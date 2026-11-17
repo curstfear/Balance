@@ -79,9 +79,13 @@ export async function saveNewWorkout(db: BalanceDB, data: WorkoutData) {
 export async function logSet(db: BalanceDB, s: SetInput, cursor: Cursor) {
   const rec = setRecord(s);
   await db.transaction('rw', db.workouts, db.sets, async () => {
+    const w = await db.workouts.get(s.workoutId);
+    if (!w) throw new Error(`logSet: workout ${s.workoutId} not found`); // never leave orphan sets
+    // a repeated write of the same set (double tap, retry) replaces it instead of adding a copy
     await db.sets.put(rec);
-    await db.workouts.where('id').equals(s.workoutId).and((w) => w.status === 'active')
-      .modify({ cursor: cursorOf(cursor), lastActivityAt: s.doneAt });
+    if (w.status === 'active') await db.workouts.update(w.id, { cursor: cursorOf(cursor), lastActivityAt: s.doneAt });
+    // a late write after closing without sets: the workout now has a set, so it counts as finished
+    else if (w.status === 'abandoned') await db.workouts.update(w.id, { status: 'finished' });
   });
 }
 
@@ -96,6 +100,14 @@ export async function finishWorkout(db: BalanceDB, id: string, now: number) {
   await db.transaction('rw', db.workouts, db.sets, async () => {
     const w = await db.workouts.get(id);
     if (w && w.status === 'active') await close(db, w, now, false);
+  });
+}
+
+/** Closes a workout left too long without input, as on launch: ends at the last set, sets kept. */
+export async function autoCloseWorkout(db: BalanceDB, id: string, now: number) {
+  await db.transaction('rw', db.workouts, db.sets, async () => {
+    const w = await db.workouts.get(id);
+    if (w && w.status === 'active') await close(db, w, now, true);
   });
 }
 

@@ -16,7 +16,7 @@
   import { t, type PainLevel } from '../strings';
   import { storage, write, canPersist } from '../../data/storage.svelte';
   import {
-    buildWorkout, saveNewWorkout, logSet, saveCursor, finishWorkout, firstCursor,
+    buildWorkout, saveNewWorkout, logSet, saveCursor, finishWorkout, autoCloseWorkout, firstCursor, RESUME_WINDOW_MS,
     type PlanInput, type WorkoutData, type SetInput,
   } from '../../data/workouts';
   import type { Cursor } from '../../data/schema';
@@ -51,6 +51,7 @@
   let scrollEl: HTMLElement | undefined = $state();
   let restoredNote = $state(!!untrack(() => restored));
   let closed = false;
+  let lastActivity = session.workout.lastActivityAt;
 
   const cur = $derived(exercises[ex]);
   const done = $derived(logs[ex].length);
@@ -69,6 +70,7 @@
     // the set and the new position are written together, right away
     if (persisting) {
       const c = cursorNow();
+      lastActivity = input.doneAt;
       write((db) => logSet(db, input, c));
       if (phase === 'done') { closed = true; write((db) => finishWorkout(db, input.workoutId, input.doneAt)); }
     }
@@ -128,9 +130,23 @@
 
   function step(fn: () => void) { fn(); haptic(); }
 
+  // iOS can keep the app alive for hours: a workout left without input longer than the resume
+  // window is closed the same way as on launch (sets kept) instead of continuing
+  function closeIfStale() {
+    if (closed || phase === 'done' || Date.now() - lastActivity <= RESUME_WINDOW_MS) return false;
+    closed = true;
+    clearTimeout(timer);
+    if (logs.some((l) => l.length)) storage.autoClosed = true;
+    const at = Date.now();
+    if (persisting) write((db) => autoCloseWorkout(db, session.workout.id, at));
+    closeTo(0);
+    return true;
+  }
+
   // clock + automatic end of rest
   $effect(() => {
     const id = setInterval(() => {
+      if (closeIfStale()) return;
       now = Date.now();
       if (phase === 'rest' && now >= restEnd) { haptic(200); phase = 'set'; }
     }, 250);
@@ -143,10 +159,11 @@
   let dirty = false;
   function flushCursor() {
     clearTimeout(timer);
-    if (!dirty || !persisting || closed) return;
+    if (closeIfStale() || !dirty || !persisting || closed) return;
     dirty = false;
     const c = cursorNow();
     const at = Date.now();
+    lastActivity = at;
     write((db) => saveCursor(db, session.workout.id, c, at));
   }
   let first = true;
@@ -307,7 +324,7 @@
   <div class="flags">
     <div class="ft"><Icon name="alert" size={18} />{t.pain.flagsTitle}</div>
     <p>{t.pain.flagsText}</p>
-    <Button variant="alarm" size="m" grow onclick={() => { painOpen = false; push(Stop, {}, 'modal'); }}>{t.pain.flagsAction}</Button>
+    <Button variant="alarm" size="m" grow onclick={() => { painOpen = false; push(Stop, { onfinish: exit }, 'modal'); }}>{t.pain.flagsAction}</Button>
   </div>
 </Sheet>
 

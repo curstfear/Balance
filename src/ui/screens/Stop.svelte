@@ -3,6 +3,9 @@
   import Dock from '../components/Dock.svelte';
   import { closeTo, pop } from '../nav.svelte';
   import { t } from '../strings';
+
+  // onfinish: the workout underneath closes itself (and saves that it ended)
+  let { onfinish }: { onfinish?: () => void } = $props();
 </script>
 
 <div class="scroll">
@@ -25,7 +28,7 @@
 <Dock>
   <div class="actions">
     <Button variant="alarm" grow href="tel:{t.stop.phone}">{t.stop.call}</Button>
-    <Button variant="secondary" grow onclick={() => closeTo(0)}>{t.stop.finish}</Button>
+    <Button variant="secondary" grow onclick={() => (onfinish ? onfinish() : closeTo(0))}>{t.stop.finish}</Button>
     <button class="back" onclick={pop}>{t.stop.back}</button>
   </div>
 </Dock>

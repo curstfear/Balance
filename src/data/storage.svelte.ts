@@ -15,6 +15,9 @@ export const storage = $state({
 });
 
 let db: BalanceDB | null = null;
+let markReady: () => void;
+/** Resolves once the first attempt to open the database has finished (either way). */
+export const storageReady = new Promise<void>((r) => (markReady = r));
 let queue: Promise<unknown> = Promise.resolve();
 
 function fail(e: unknown) {
@@ -26,14 +29,18 @@ function fail(e: unknown) {
 }
 
 export async function openStorage(now = Date.now()): Promise<Launch> {
+  let d: BalanceDB | undefined;
   try {
-    const d = new BalanceDB();
+    d = new BalanceDB();
     // a newer version of the app opened the database in another tab
+    const conn = d;
     d.on('versionchange', () => {
-      d.close();
-      if (db === d) { db = null; storage.status = 'error'; storage.problem = 'newer'; }
+      conn.close();
+      if (db === conn) { db = null; storage.status = 'error'; storage.problem = 'newer'; }
       return false;
     });
+    // an older tab keeps the previous version open: the upgrade waits until it closes
+    d.on('blocked', () => { storage.status = 'error'; storage.problem = 'blocked'; });
     await d.open();
     const settings = await getSettings(d);
     const launch = await resolveOnLaunch(d, now);
@@ -46,8 +53,11 @@ export async function openStorage(now = Date.now()): Promise<Launch> {
     navigator.storage?.persist?.().catch(() => {});
     return launch;
   } catch (e) {
+    d?.close();
     fail(e);
     return { kind: 'none' };
+  } finally {
+    markReady();
   }
 }
 
@@ -62,11 +72,27 @@ export async function retryStorage() {
 
 export const canPersist = () => db !== null;
 
-/** Queued write: keeps the order of writes; a failure switches the app to in-memory mode. */
+/**
+ * Queued write: keeps the order of writes. A failed write is retried once on a fresh connection
+ * (iOS may drop the connection in the background); a second failure switches to in-memory mode.
+ * Writes are transactions with stable ids, so a retry never duplicates data.
+ */
 export function write(fn: (db: BalanceDB) => Promise<unknown>): Promise<unknown> {
   const d = db;
   if (!d) return queue;
-  queue = queue.then(() => (db === d ? fn(d) : undefined)).catch(fail);
+  queue = queue
+    .then(() => (db === d ? fn(d) : undefined))
+    .catch(async (e) => {
+      if (db !== d) return;
+      console.warn('[storage] write failed, retrying', e);
+      try {
+        d.close();
+        await d.open();
+        await fn(d);
+      } catch (e2) {
+        fail(e2);
+      }
+    });
   return queue;
 }
 

@@ -17,7 +17,8 @@ export const MIGRATIONS: Migration[] = [
       gyms: 'id',
       workouts: 'id, status, startedAt',
       workoutExercises: 'id, workoutId, exerciseId',
-      sets: 'id, workoutId, workoutExerciseId, exerciseId, doneAt',
+      // [exerciseId+doneAt]: history of one exercise in time order (engine, progress charts)
+      sets: 'id, workoutId, workoutExerciseId, exerciseId, doneAt, [exerciseId+doneAt]',
       bodyMetrics: 'id, date',
       settings: 'id',
     },

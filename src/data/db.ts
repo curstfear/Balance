@@ -20,7 +20,7 @@ export class BalanceDB extends Dexie {
   }
 }
 
-export type StorageProblem = 'unavailable' | 'newer' | 'quota' | 'unknown';
+export type StorageProblem = 'unavailable' | 'newer' | 'quota' | 'blocked' | 'unknown';
 
 /** Why the database could not be opened or written — decides the advice shown to the person. */
 export function classifyError(e: unknown): StorageProblem {
@@ -32,4 +32,12 @@ export function classifyError(e: unknown): StorageProblem {
   return 'unknown';
 }
 
-export const uid = () => crypto.randomUUID();
+/** randomUUID needs iOS 15.4+ and a secure context; fall back to getRandomValues. */
+export function uid(): string {
+  if (typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+  const b = crypto.getRandomValues(new Uint8Array(16));
+  b[6] = (b[6] & 0x0f) | 0x40;
+  b[8] = (b[8] & 0x3f) | 0x80;
+  const h = [...b].map((x) => x.toString(16).padStart(2, '0')).join('');
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+}
