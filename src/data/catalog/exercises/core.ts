@@ -188,7 +188,7 @@ export const CORE: Exercise[] = [
     aliases: ['фермерская прогулка', 'переноска гантелей', 'farmers carry', 'farmer walk'],
     equipment: [['dumbbells', 'kettlebell']], equipClass: 'dumbbell', station: 'db_area',
     pattern: 'carry', vectorKey: 'carry_bilateral', transferGroup: 'farmers_walk', mechanics: 'compound', laterality: 'bilateral',
-    muscles: { forearms: 1, upper_back: 0.75, abs: 0.5, glutes: 0.25 },
+    muscles: { upper_back: 1, forearms: 0.75, abs: 0.5, glutes: 0.25 },
     lengthBias: 'mid', lengthenedPartialsOk: false, stability: 3, skill: 1, fatigue: 2, axial: 'moderate',
     needsSafety: false, gripLimited: true, load: 'external', supersetOk: false, minExperience: 'novice',
     contraindications: [{ zone: 'lower_back', level: 'modify' }],

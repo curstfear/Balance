@@ -7,7 +7,7 @@
   import ExerciseCard from './ExerciseCard.svelte';
   import { EQUIP, EXERCISES, MUSCLE, ZONES, exerciseById, mainMuscle, musclesByShare, setupSec, weightStep } from '../../data/catalog';
   import { similar } from '../../engine/similar';
-  import { push, pop } from '../nav.svelte';
+  import { push, pop, DURATION } from '../nav.svelte';
   import { fmt } from '../format';
   import { t } from '../strings';
 
@@ -30,7 +30,7 @@
 
   {#if e && main}
     <div class="hero">
-      <MuscleZoom muscles={e.muscles} focus={main} label={t.catalog.worked(list.filter(([, v]) => v >= 0.5).map(([m]) => MUSCLE[m].name.toLowerCase()).join(', '))} />
+      <MuscleZoom muscles={e.muscles} focus={main} delay={DURATION - 120} label={t.catalog.worked(list.filter(([, v]) => v >= 0.5).map(([m]) => MUSCLE[m].name.toLowerCase()).join(', '))} />
     </div>
 
     <h1 class="title">{e.name.ru}</h1>

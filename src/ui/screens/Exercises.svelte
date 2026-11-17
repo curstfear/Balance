@@ -109,7 +109,7 @@
   .sec { display: flex; gap: 6px; font-size: 13px; font-weight: 600; color: var(--t2); text-transform: uppercase; margin: 22px 14px 7px; }
   .sec span { color: var(--t3); }
   .list { background: var(--card); border-radius: var(--r-list); overflow: hidden; box-shadow: var(--shadow), inset 0 0 0 1px var(--stroke); }
-  .li { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 8px 14px 8px 0; text-align: left; position: relative; }
+  .li { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 8px 14px 8px 0; text-align: left; position: relative; content-visibility: auto; contain-intrinsic-size: auto 64px; }
   .li + .li::before { content: ''; position: absolute; top: 0; left: 62px; right: 0; height: .5px; background: var(--sep); }
   .li:active { background: var(--fill2); }
   .bar { width: 4px; align-self: stretch; margin: 6px 0; border-radius: 0 3px 3px 0; flex: none; }

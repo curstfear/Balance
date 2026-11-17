@@ -371,7 +371,7 @@ export const PUSH: Exercise[] = [
   {
     id: 'seated-barbell-press', name: { ru: 'Жим штанги сидя', en: 'Seated barbell press' },
     aliases: ['жим штанги сидя', 'seated military press', 'seated barbell press'],
-    equipment: [['barbell'], ['bench_adj']], equipClass: 'barbell', station: 'bench_area',
+    equipment: [['barbell'], ['bench_adj'], ['rack']], equipClass: 'barbell', station: 'rack',
     pattern: 'v_push', vectorKey: 'vpush_barbell', transferGroup: 'overhead_press', mechanics: 'compound', laterality: 'bilateral',
     muscles: { delt_front: 1, triceps: 0.75, delt_side: 0.5, upper_back: 0.25 },
     lengthBias: 'mid', lengthenedPartialsOk: false, stability: 2, skill: 2, fatigue: 2, axial: 'low',

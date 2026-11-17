@@ -5,6 +5,8 @@ import type { View } from './overlays';
 const BASE = import.meta.env.BASE_URL;
 export const atlasUrl = (view: View) => `${BASE}art/atlas-${view}.svg`;
 export const frameUrl = (id: string, frame: 'relaxation' | 'tension') => `${BASE}art/ek/${id}-${frame}.svg`;
+/** pre-rendered atlas close-up of a main muscle (scripts/build-thumbs.mjs) — for lists */
+export const thumbUrl = (m: MuscleId) => `${BASE}art/thumbs/${m}.png`;
 
 /** Atlas units 200×369. Each main muscle has a close-up: which side and which box. */
 export const CROP: Record<MuscleId, { view: View; box: [number, number, number, number] }> = {

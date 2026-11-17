@@ -11,6 +11,7 @@ const ZONE_IDS = new Set<string>(ZONES.map((z) => z.id));
 // files present in public/art/ek (keys only — nothing is loaded)
 const ART = new Set(Object.keys(import.meta.glob('/public/art/ek/*.svg')).map((p) => p.split('/').pop()));
 const existsSync = (file: string) => ART.has(file);
+const THUMBS = new Set(Object.keys(import.meta.glob('/public/art/thumbs/*.png')).map((p) => p.split('/').pop()));
 const bad = (pred: (e: Exercise) => boolean) => EXERCISES.filter(pred).map((e) => e.id);
 
 describe('catalog integrity', () => {
@@ -58,12 +59,13 @@ describe('catalog integrity', () => {
   it('technique: 2–3 cues, formal tone, full stops', () => {
     expect(bad((e) => e.technique.cues.length < 2 || e.technique.cues.length > 3)).toEqual([]);
     expect(bad((e) => e.technique.cues.some((c) => !/^[А-ЯЁ]/.test(c) || !c.endsWith('.') || /[!?]/.test(c)))).toEqual([]);
-    expect(bad((e) => e.technique.cues.some((c) => /\b(норм|качалк|добира|держи |давай)/i.test(c)))).toEqual([]);
+    expect(bad((e) => e.technique.cues.some((c) => /(?<!\p{L})(норм|качалк|добира|держи |давай)/iu.test(c)))).toEqual([]);
   });
 
   it('pictures exist for every exercise and piece of equipment that has one', () => {
     expect(bad((e) => !!e.technique.art && ['relaxation', 'tension'].some((f) => !existsSync(`${e.technique.art!.id}-${f}.svg`)))).toEqual([]);
     expect(EQUIPMENT.filter((q) => q.art && !existsSync(`${q.art}-tension.svg`)).map((q) => q.id)).toEqual([]);
+    expect(bad((e) => !e.technique.art && !THUMBS.has(`${mainMuscle(e)}.png`))).toEqual([]);
   });
 
   it('supersets are off for axial ≥ moderate or skill 3 (selection §7)', () => {

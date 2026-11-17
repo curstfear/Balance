@@ -38,3 +38,7 @@ h1, h2, h3 { font: inherit; }
 /* press feedback */
 .press { transition: transform .25s var(--ease-ios), opacity .25s; }
 .press:active { transform: scale(.96); }
+
+/* Everkinetic line art (black lines on transparent): light lines in the dark theme */
+.lineart { display: block; object-fit: contain; filter: invert(1) brightness(.9); }
+@media (prefers-color-scheme: light) { .lineart { filter: none; opacity: .85; } }

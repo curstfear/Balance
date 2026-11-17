@@ -20,11 +20,12 @@ export function similarity(x: Exercise, y: Exercise, setupSec: (e: Exercise) => 
     + 0.1 * (setupSec(y) <= 60 ? 1 : 0);
 }
 
-/** Top-n substitutes: same main muscle, not the same movement (vectorKey), most similar first; ties by id. */
+/** Top-n substitutes: same main muscle, most similar first; ties by id. Same vectorKey is allowed here —
+ *  it only forbids two such exercises in one session (selection §5). */
 export function similar(x: Exercise, pool: Exercise[], setupSec: (e: Exercise) => number, n = 3): Exercise[] {
   const main = (e: Exercise) => Object.entries(e.muscles).find(([, v]) => v === 1)?.[0];
   return pool
-    .filter((y) => y.id !== x.id && y.vectorKey !== x.vectorKey && main(y) === main(x))
+    .filter((y) => y.id !== x.id && main(y) === main(x))
     .map((y) => ({ y, s: similarity(x, y, setupSec) }))
     .sort((a, b) => b.s - a.s || a.y.id.localeCompare(b.y.id))
     .slice(0, n)

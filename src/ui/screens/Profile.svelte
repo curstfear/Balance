@@ -2,27 +2,27 @@
   import Card from '../components/Card.svelte';
   import Icon from '../components/Icon.svelte';
   import TabBar from '../components/TabBar.svelte';
-  import Plan from './Plan.svelte';
   import Exercises from './Exercises.svelte';
   import EquipmentList from './EquipmentList.svelte';
   import Credits from './Credits.svelte';
   import { EXERCISES, EQUIPMENT } from '../../data/catalog';
   import { read } from '../../data/storage.svelte';
   import { profileStats, type ProfileStats } from '../../data/workouts';
-  import { push, haptic } from '../nav.svelte';
-  import { goTab } from '../tabs';
+  import { nav, push } from '../nav.svelte';
+  import { goTab, startWorkout } from '../tabs';
   import { fmt } from '../format';
   import { t } from '../strings';
   import type { IconName } from '../icons';
 
-  let stats = $state<ProfileStats | null>(null);
-  read(profileStats).then((s) => (stats = s ?? { workouts: 0, sets: 0, since: null }));
-  const days = $derived(stats?.since ? Math.floor((Date.now() - stats.since) / 86_400_000) + 1 : 0);
-
-  function start() {
-    haptic(15);
-    push(Plan, {});
-  }
+  // null — loading; 'off' — storage unavailable
+  let stats = $state<ProfileStats | 'off' | null>(null);
+  // re-read whenever Profile is the visible root again (e.g. after a workout started from here)
+  $effect(() => {
+    if (nav.stack.length === 1) read(profileStats).then((s) => (stats = s ?? 'off'));
+  });
+  const s = $derived(stats && stats !== 'off' ? stats : null);
+  const days = $derived(s?.since ? Math.floor((Date.now() - s.since) / 86_400_000) + 1 : 0);
+  const num = (n: number | undefined) => (n === undefined ? '–' : fmt(n));
 
   const rows: { icon: IconName; color: string; label: string; count?: number; open: () => void }[] = [
     { icon: 'list', color: 'var(--lime)', label: t.profile.exercises, count: EXERCISES.length, open: () => push(Exercises, { back: t.profile.title }) },
@@ -35,11 +35,12 @@
 
   <Card pad={0}>
     <div class="stats" aria-busy={stats === null}>
-      <div><div class="n big">{stats ? fmt(stats.workouts) : '–'}</div><div class="cap">{t.profile.workouts}</div></div>
-      <div><div class="n big">{stats ? fmt(stats.sets) : '–'}</div><div class="cap">{t.profile.sets}</div></div>
-      <div><div class="n big">{stats ? fmt(days) : '–'}</div><div class="cap">{t.profile.days}</div></div>
+      <div><div class="n big">{num(s?.workouts)}</div><div class="cap">{t.profile.workouts(s?.workouts ?? 0)}</div></div>
+      <div><div class="n big">{num(s?.sets)}</div><div class="cap">{t.profile.sets(s?.sets ?? 0)}</div></div>
+      <div><div class="n big">{s ? fmt(days) : '–'}</div><div class="cap">{t.profile.days(days)}</div></div>
     </div>
-    {#if stats && stats.workouts === 0}<div class="empty">{t.profile.statsEmpty}</div>{/if}
+    {#if stats === 'off'}<div class="empty">{t.profile.statsOff}</div>
+    {:else if s && s.workouts === 0}<div class="empty">{t.profile.statsEmpty}</div>{/if}
   </Card>
 
   <h2 class="sec">{t.profile.reference}</h2>
@@ -64,7 +65,7 @@
   </div>
 </div>
 
-<TabBar active="profile" onstart={start} onselect={goTab} />
+<TabBar active="profile" onstart={startWorkout} onselect={goTab} />
 
 <style>
   .head { margin: 10px 0 14px; }

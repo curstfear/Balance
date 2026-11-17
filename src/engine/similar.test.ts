@@ -17,7 +17,7 @@ describe('similar', () => {
     expect(similarity(base, ex({ id: 'b' }), setup)).toBeCloseTo(0.85);
   });
 
-  it('prefers the same pattern and muscle mix, excludes the same vectorKey and other main muscles', () => {
+  it('prefers the same pattern and muscle mix, excludes other main muscles', () => {
     const pool = [
       base,
       ex({ id: 'same-key', vectorKey: 'a' }),
@@ -25,7 +25,7 @@ describe('similar', () => {
       ex({ id: 'press', vectorKey: 'p', muscles: { chest: 1, triceps: 0.5, delt_front: 0.25 } }),
       ex({ id: 'row', vectorKey: 'r', muscles: { lats: 1 } }),
     ];
-    expect(similar(base, pool, setup).map((e) => e.id)).toEqual(['press', 'fly']);
+    expect(similar(base, pool, setup).map((e) => e.id)).toEqual(['same-key', 'press', 'fly']);
   });
 
   it('is deterministic on ties', () => {

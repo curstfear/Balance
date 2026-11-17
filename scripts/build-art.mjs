@@ -14,14 +14,13 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 // --- minify: drop editor metadata and extra whitespace.
 // Coordinates are NOT rounded: paths use relative commands, rounding error accumulates and contours break into blobs.
-const round = (s) => s;
 function minify(svg) {
   return svg
     .replace(/<\?xml[^>]*>/g, '').replace(/<!--[\s\S]*?-->/g, '')
     .replace(/<metadata[\s\S]*?<\/metadata>/g, '').replace(/<sodipodi:namedview[\s\S]*?(\/>|<\/sodipodi:namedview>)/g, '')
     .replace(/<defs[^>]*\/>/g, '')
     .replace(/\s(?:inkscape|sodipodi):[\w-]+="[^"]*"/g, '').replace(/\sxmlns:(?:dc|cc|rdf|svg|sodipodi|inkscape)="[^"]*"/g, '')
-    .replace(/\s(d|points|transform)="([^"]*)"/g, (_, a, v) => ` ${a}="${round(v).replace(/\s+/g, ' ').trim()}"`)
+    .replace(/\s(d|points|transform)="([^"]*)"/g, (_, a, v) => ` ${a}="${v.replace(/\s+/g, ' ').trim()}"`)
     .replace(/>\s+</g, '><').replace(/\s{2,}/g, ' ').trim();
 }
 
@@ -82,8 +81,8 @@ for (const [muscle, list] of Object.entries(WGER)) {
   for (const [n, view] of list) {
     const svg = readFileSync(join(WG, 'main', `muscle-${n}.svg`), 'utf8');
     const tr = /<g[^>]*transform="([^"]+)"/.exec(svg)?.[1] ?? '';
-    const ds = [...svg.matchAll(/\sd="([^"]+)"/g)].map((m) => round(m[1]).replace(/\s+/g, ' ').trim());
-    ((layers[muscle] ??= {})[view] ??= []).push({ t: round(tr), d: ds });
+    const ds = [...svg.matchAll(/\sd="([^"]+)"/g)].map((m) => m[1].replace(/\s+/g, ' ').trim());
+    ((layers[muscle] ??= {})[view] ??= []).push({ t: tr, d: ds });
   }
 }
 for (const [muscle, views] of Object.entries(OWN)) for (const [view, ds] of Object.entries(views)) ((layers[muscle] ??= {})[view] ??= []).push({ t: '', d: ds });

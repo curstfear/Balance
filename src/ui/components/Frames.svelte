@@ -12,7 +12,7 @@
   {#each order as f, i (f)}
     <div class="fr">
       <span class="num n">{i + 1}</span>
-      <span class="pic" style="--src:url('{frameUrl(art.id, f)}')"></span>
+      <img class="pic lineart" src={frameUrl(art.id, f)} alt="" decoding="async" />
       <span class="cap">{i === 0 ? t.catalog.start : t.catalog.end}</span>
     </div>
   {/each}
@@ -25,9 +25,6 @@
     position: absolute; top: 9px; left: 9px; width: 22px; height: 22px; border-radius: 11px;
     background: var(--lime); color: var(--lime-ink); font-size: 13px; display: flex; align-items: center; justify-content: center;
   }
-  .pic {
-    display: block; height: 150px; background: var(--t1); opacity: .88;
-    -webkit-mask: var(--src) center / contain no-repeat; mask: var(--src) center / contain no-repeat;
-  }
+  .pic { width: 100%; height: 150px; }
   .cap { font-size: 13px; font-weight: 600; color: var(--t2); margin: 4px 2px 0; }
 </style>

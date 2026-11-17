@@ -178,7 +178,7 @@ export interface ProfileStats { workouts: number; sets: number; since: Epoch | n
 export async function profileStats(db: BalanceDB): Promise<ProfileStats> {
   const done = await db.workouts.where('status').equals('finished').toArray();
   const ids = new Set(done.map((w) => w.id));
-  const sets = (await db.sets.toArray()).filter((s) => ids.has(s.workoutId) && s.kind === 'work').length;
+  const sets = ids.size ? (await db.sets.where('workoutId').anyOf([...ids]).toArray()).filter((s) => s.kind === 'work').length : 0;
   const since = done.length ? Math.min(...done.map((w) => w.startedAt)) : null;
   return { workouts: done.length, sets, since };
 }

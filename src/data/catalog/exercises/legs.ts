@@ -444,7 +444,7 @@ export const LEGS: Exercise[] = [
     pattern: 'knee_ext', vectorKey: 'knee_ext_sissy', transferGroup: 'sissy_squat', mechanics: 'isolation', laterality: 'bilateral',
     muscles: { quads: 1 },
     lengthBias: 'long', lengthenedPartialsOk: false, stability: 2, skill: 2, fatigue: 2, axial: 'none',
-    needsSafety: false, gripLimited: false, load: 'bodyweight_plus', supersetOk: true, minExperience: 'intermediate',
+    needsSafety: false, gripLimited: false, load: 'bodyweight', supersetOk: true, minExperience: 'intermediate',
     contraindications: [{ zone: 'knee', level: 'avoid' }],
     technique: {
       art: { id: '0158', first: 'tension' },
@@ -657,7 +657,7 @@ export const LEGS: Exercise[] = [
     pattern: 'calf', vectorKey: 'calf_straight_knee', transferGroup: 'single_leg_calf_raise', mechanics: 'isolation', laterality: 'unilateral',
     muscles: { calves: 1 },
     lengthBias: 'long', lengthenedPartialsOk: true, stability: 2, skill: 1, fatigue: 1, axial: 'none',
-    needsSafety: false, gripLimited: false, load: 'bodyweight_plus', weightStep: 2, supersetOk: true, minExperience: 'novice',
+    needsSafety: false, gripLimited: false, load: 'bodyweight', supersetOk: true, minExperience: 'novice',
     contraindications: [],
     technique: {
       cues: ['Носок стоит на краю ступеньки, рука удерживает опору.', 'Пятка опускается до растяжения, подъём выполняется до верхней точки.'],
