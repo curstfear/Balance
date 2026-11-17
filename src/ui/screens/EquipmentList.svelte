@@ -33,7 +33,7 @@
   .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .eq { display: flex; flex-direction: column; text-align: left; padding: 12px 14px 14px; border-radius: var(--r-list); background: var(--card); box-shadow: var(--shadow), inset 0 0 0 1px var(--stroke); min-height: 190px; }
   .pic { width: 100%; height: 112px; margin-bottom: 10px; }
-  .ph { height: 112px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; color: var(--t3); border-radius: 14px; background: var(--fill2); }
+  .ph { height: 112px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; color: var(--t3); }
   .nm { font-size: 16px; font-weight: 600; line-height: 20px; letter-spacing: -.2px; }
   .sub { font-size: 13px; color: var(--t2); margin-top: auto; padding-top: 4px; }
 </style>

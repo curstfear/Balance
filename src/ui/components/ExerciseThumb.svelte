@@ -18,6 +18,6 @@
 <style>
   .th { flex: none; border-radius: 12px; overflow: hidden; background: var(--fill2); display: flex; }
   img { width: 100%; height: 100%; }
-  .lineart { padding: 3px; }
+  .lineart { padding: 1px; }
   .atlas { object-fit: cover; }
 </style>
