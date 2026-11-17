@@ -68,7 +68,8 @@
 
   function shiftRest(sec: number) {
     restEnd += sec * 1000;
-    restTotal = Math.max(restTotal, Math.ceil((restEnd - Date.now()) / 1000));
+    // ±15 s changes the planned rest itself; never shorter than what is left
+    restTotal = Math.max(restTotal + sec, Math.ceil((restEnd - Date.now()) / 1000), 1);
     now = Date.now();
   }
 

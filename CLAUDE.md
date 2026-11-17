@@ -21,7 +21,9 @@
 
 ## Запуск
 - `npm i` → `npm run dev` (локально, `--host` — открыть с iPhone по Wi-Fi), `npm run build` — tsc + сборка в `dist/`.
-- Деплой: пуш в `main` → GitHub Actions ([.github/workflows/pages.yml](.github/workflows/pages.yml)) → https://curstfear.github.io/Balance/
+- Тесты: `npm test` (Vitest, логика), `npm run build && npm run test:e2e` (Playwright, WebKit, эмуляция iPhone 15).
+  Новое поведение — с тестом; сценарии e2e падают при любой ошибке в консоли страницы.
+- Деплой: пуш в `main` → тесты → GitHub Actions ([.github/workflows/pages.yml](.github/workflows/pages.yml)) → https://curstfear.github.io/Balance/
 - Стек: Svelte 5 + TypeScript 6 + Vite. `npm run check` — svelte-check.
 - `src/ui/screens/` — экраны, `src/ui/components/` — компоненты, `src/ui/nav.svelte.ts` — стек экранов
   (push / modal / жест «назад»), `src/ui/strings.ts` — все тексты, `src/styles/tokens.css` — токены.
