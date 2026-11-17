@@ -29,8 +29,13 @@ export function setRoot<P extends Record<string, unknown>>(component: Component<
   nav.stack = [entry(component, props, 'root', 'active')];
 }
 
-export async function push<P extends Record<string, unknown>>(component: Component<P>, props: P, kind: 'push' | 'modal' = 'push') {
+export async function push<P extends Record<string, unknown>>(component: Component<P>, props: P, kind: 'push' | 'modal' = 'push', instant = false) {
   const prev = top();
+  if (instant) { // restoring state on launch: no animation
+    nav.stack.push(entry(component, props, kind, 'active'));
+    if (prev) prev.pos = kind === 'push' ? 'behind-push' : 'behind-modal';
+    return;
+  }
   nav.stack.push(entry(component, props, kind, 'enter'));
   const added = top();
   await tick();

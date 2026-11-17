@@ -2,6 +2,7 @@ export const ICON_PATHS = {
   chevR: '<path d="M9 5.5l6.5 6.5L9 18.5" stroke-width="2.4"/>',
   chevL: '<path d="M15 4.5L7.5 12l7.5 7.5" stroke-width="2.6"/>',
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/>',
+  share: '<path d="M12 3v12M8 7l4-4 4 4"/><path d="M7 11H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/>',
   bolt: '<path d="M13.5 2L4 14h7l-1.5 8L20 10h-7l.5-8z" fill="currentColor" stroke="none"/>',
   play: '<path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.4-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z" fill="currentColor" stroke="none"/>',
   home: '<path d="M3.5 10.2L12 3.5l8.5 6.7V19a1.5 1.5 0 0 1-1.5 1.5h-4.5v-6h-5v6H5A1.5 1.5 0 0 1 3.5 19z"/>',

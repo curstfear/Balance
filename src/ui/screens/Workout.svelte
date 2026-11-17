@@ -1,6 +1,6 @@
 <script lang="ts">
   import { untrack } from 'svelte';
-  import { fly } from 'svelte/transition';
+  import { fade, fly } from 'svelte/transition';
   import { cubicOut } from 'svelte/easing';
   import Button from '../components/Button.svelte';
   import RoundButton from '../components/RoundButton.svelte';
@@ -11,30 +11,46 @@
   import RestRing from '../components/RestRing.svelte';
   import Sheet from '../components/Sheet.svelte';
   import Stop from './Stop.svelte';
-  import type { Plan } from '../../preview-data';
   import { closeTo, push, haptic } from '../nav.svelte';
   import { fmt, clock } from '../format';
   import { t, type PainLevel } from '../strings';
+  import { storage, write, canPersist } from '../../data/storage.svelte';
+  import {
+    buildWorkout, saveNewWorkout, logSet, saveCursor, finishWorkout, firstCursor,
+    type PlanInput, type WorkoutData, type SetInput,
+  } from '../../data/workouts';
+  import type { Cursor } from '../../data/schema';
 
   interface SetLog { w: number; r: number; rir: number | null; pain: PainLevel | null }
 
-  let { plan }: { plan: Plan } = $props();
+  // `restored` — an unfinished workout reopened on launch; otherwise a new one is started from `plan`
+  let { plan, restored }: { plan: PlanInput; restored?: WorkoutData } = $props();
   const exercises = untrack(() => plan.exercises); // fixed for the whole workout
-  const startedAt = Date.now();
+  const session = untrack(() => restored ?? buildWorkout(plan, Date.now()));
+  const persisting = canPersist(); // a workout started without storage stays in memory to the end
+  if (persisting && !untrack(() => restored)) write((db) => saveNewWorkout(db, session));
+  const startedAt = session.workout.startedAt;
+  const c0: Cursor = session.workout.cursor ?? firstCursor({ title: "", exercises });
 
   let now = $state(Date.now());
-  let ex = $state(0);
-  let weight = $state(exercises[0].weight);
-  let reps = $state(exercises[0].reps[0]);
-  let rir = $state<number | null>(null);
-  let pain = $state<PainLevel | null>(null);
+  let ex = $state(c0.ex);
+  let weight = $state(c0.weight);
+  let reps = $state(c0.reps);
+  let rir = $state<number | null>(c0.rir);
+  let pain = $state<PainLevel | null>(c0.pain);
   let painOpen = $state(false);
-  let phase = $state<'set' | 'rest' | 'done'>('set');
-  let restEnd = $state(0);
-  let restTotal = $state(0);
-  let note = $state('');
-  let logs = $state<SetLog[][]>(exercises.map(() => []));
+  // a rest that ran out while the app was closed ends quietly — no second vibration
+  let phase = $state<'set' | 'rest' | 'done'>(c0.phase === 'rest' && c0.restEnd <= Date.now() ? 'set' : c0.phase);
+  let restEnd = $state(c0.restEnd);
+  let restTotal = $state(c0.restTotal);
+  let note = $state(c0.note);
+  let logs = $state<SetLog[][]>(session.exercises.map((we) => session.sets
+    .filter((s) => s.workoutExerciseId === we.id)
+    .sort((a, b) => a.index - b.index)
+    .map((s) => ({ w: s.weight, r: s.reps, rir: s.rir, pain: s.pain === 'none' ? null : s.pain }))));
   let scrollEl: HTMLElement | undefined = $state();
+  let restoredNote = $state(!!untrack(() => restored));
+  let closed = false;
 
   const cur = $derived(exercises[ex]);
   const done = $derived(logs[ex].length);
@@ -42,7 +58,32 @@
   const view = $derived(`${phase}-${ex}-${done}`);
   const all = $derived(logs.flat());
 
+  const cursorNow = (): Cursor => ({ ex, weight, reps, rir, pain, phase, restEnd, restTotal, note });
+
   function completeSet() {
+    const input: SetInput = {
+      workoutId: session.workout.id, workoutExerciseId: session.exercises[ex].id, exerciseId: cur.id,
+      index: logs[ex].length + 1, weight, reps, rir, pain, doneAt: Date.now(),
+    };
+    advance();
+    // the set and the new position are written together, right away
+    if (persisting) {
+      const c = cursorNow();
+      write((db) => logSet(db, input, c));
+      if (phase === 'done') { closed = true; write((db) => finishWorkout(db, input.workoutId, input.doneAt)); }
+    }
+  }
+
+  function exit() {
+    if (persisting && !closed) {
+      closed = true;
+      const at = Date.now();
+      write((db) => finishWorkout(db, session.workout.id, at));
+    }
+    closeTo(0);
+  }
+
+  function advance() {
     const e = cur;
     logs[ex].push({ w: weight, r: reps, rir, pain });
     haptic(20);
@@ -96,6 +137,43 @@
     return () => clearInterval(id);
   });
 
+  // input between sets (weight, reps, reserve, rest) is saved shortly after it changes,
+  // and at once when the app goes to the background — iOS may close it there
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let dirty = false;
+  function flushCursor() {
+    clearTimeout(timer);
+    if (!dirty || !persisting || closed) return;
+    dirty = false;
+    const c = cursorNow();
+    const at = Date.now();
+    write((db) => saveCursor(db, session.workout.id, c, at));
+  }
+  let first = true;
+  $effect(() => {
+    cursorNow();
+    if (first) { first = false; return; }
+    dirty = true;
+    clearTimeout(timer);
+    timer = setTimeout(flushCursor, 300);
+  });
+  $effect(() => {
+    const onHide = () => { if (document.visibilityState === 'hidden') flushCursor(); };
+    document.addEventListener('visibilitychange', onHide);
+    window.addEventListener('pagehide', flushCursor);
+    return () => {
+      flushCursor();
+      document.removeEventListener('visibilitychange', onHide);
+      window.removeEventListener('pagehide', flushCursor);
+    };
+  });
+
+  $effect(() => {
+    if (!restoredNote) return;
+    const id = setTimeout(() => (restoredNote = false), 3000);
+    return () => clearTimeout(id);
+  });
+
   // every new view starts from the top
   $effect(() => { void view; scrollEl?.scrollTo({ top: 0 }); });
 
@@ -114,7 +192,7 @@
 <div class="scroll" bind:this={scrollEl}>
   {#if phase !== 'done'}
     <div class="row top">
-      <RoundButton icon="close" label={t.workout.finish} size={40} onclick={() => closeTo(0)} />
+      <RoundButton icon="close" label={t.workout.finish} size={40} onclick={exit} />
       <div style="flex:1">
         <div class="prog">
           {#each exercises as e, i (i)}
@@ -125,6 +203,11 @@
       </div>
       <div class="n elapsed">{clock((now - startedAt) / 1000)}</div>
     </div>
+  {/if}
+  {#if storage.status === 'error'}
+    <div class="note warn" role="status"><Icon name="alert" size={16} color="var(--orange)" /><span>{t.storage.notSaved}</span></div>
+  {:else if restoredNote}
+    <div class="note" role="status" out:fade={{ duration: 300 }}><Icon name="bolt" size={16} color="var(--accent-text)" /><span>{t.workout.restored(done + 1)}</span></div>
   {/if}
 
   {#key view}
@@ -256,6 +339,8 @@
   .next { font-size: 40px; margin-top: 4px; letter-spacing: -1px; }
   .note { margin-top: 12px; padding: 11px 12px; border-radius: 14px; background: rgba(212, 255, 58, .08); display: flex; gap: 9px; font-size: 14px; line-height: 19px; }
   .note :global(.ic) { margin-top: 1px; }
+  .note.warn { background: rgba(255, 138, 61, .12); }
+  .scroll > .note { margin-top: 10px; }
   .badge-ok { width: 24px; height: 24px; border-radius: 8px; background: var(--lime); color: var(--lime-ink); display: flex; align-items: center; justify-content: center; }
   .stat { padding: 14px 16px; }
   .stat .n { font-size: 30px; }
