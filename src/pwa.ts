@@ -26,6 +26,5 @@ export function setupPwa() {
     }
   });
 
-  // keep data from being evicted by Safari (best effort)
-  navigator.storage?.persist?.().catch(() => {});
+  // storage.persist() is requested in src/data/storage.svelte.ts once the database is open
 }

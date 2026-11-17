@@ -6,6 +6,9 @@
   import WeekStrip from '../components/WeekStrip.svelte';
   import TabBar from '../components/TabBar.svelte';
   import Plan from './Plan.svelte';
+  import InstallHint from '../components/InstallHint.svelte';
+  import StorageBanner from '../components/StorageBanner.svelte';
+  import { storage } from '../../data/storage.svelte';
   import { MUSCLES, weekBalance, planFor, totals } from '../../preview-data';
   import { push, haptic } from '../nav.svelte';
   import { t, plural, FORMS } from '../strings';
@@ -17,6 +20,7 @@
 
   function start() {
     haptic(15);
+    storage.autoClosed = false;
     push(Plan, {});
   }
 </script>
@@ -30,6 +34,11 @@
     <span class="sp"></span>
     <div class="avatar" aria-hidden="true">А</div>
   </header>
+
+  {#if storage.status === 'error'}<StorageBanner />{/if}
+  {#if storage.autoClosed}
+    <div class="auto" role="status"><Icon name="check" size={16} color="var(--accent-text)" /><span>{t.home.autoClosed}</span></div>
+  {/if}
 
   <WeekStrip today={now} />
 
@@ -54,6 +63,8 @@
       {#each plan.muscles as m (m.id)}<Chip dot="var(--c-{m.id})">{m.name}</Chip>{/each}
     </div>
   </Card>
+
+  {#if storage.installHint && storage.status === 'ok'}<InstallHint />{/if}
 
   <Card style="margin-top:12px">
     <div class="card-h">{t.home.balance}<span class="chev"><Icon name="chevR" size={18} /></span></div>
@@ -98,6 +109,8 @@
   .title { font-size: 28px; font-weight: 700; letter-spacing: -.5px; margin-top: 6px; line-height: 1.15; }
   .meta { gap: 14px; font-size: 15px; margin-top: 8px; }
   .meta .n { font-weight: 600; }
+  .auto { margin: 12px 0 2px; padding: 11px 12px; border-radius: 14px; background: var(--fill2); display: flex; gap: 9px; font-size: 14px; line-height: 19px; }
+  .auto :global(.ic) { margin-top: 1px; }
   .why { margin-top: 14px; padding: 11px 12px; border-radius: 14px; background: var(--fill2); display: flex; gap: 9px; font-size: 14px; line-height: 19px; }
   .why :global(.ic) { margin-top: 1px; }
   .chips { gap: 6px; margin-top: 12px; flex-wrap: wrap; }

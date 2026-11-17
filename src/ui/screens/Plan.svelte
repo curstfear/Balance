@@ -9,6 +9,7 @@
   import { push, pop, haptic } from '../nav.svelte';
   import { fmt } from '../format';
   import { t } from '../strings';
+  import { storageReady } from '../../data/storage.svelte';
 
   type Minutes = 45 | 55 | 70;
   let minutes = $state<Minutes>(55);
@@ -16,8 +17,9 @@
   const sum = $derived(totals(plan));
   const options = ([45, 55, 70] as Minutes[]).map((m) => ({ value: m, label: `${m} ${t.units.min}` }));
 
-  function start() {
+  async function start() {
     haptic(15);
+    await storageReady; // otherwise a workout started on a slow cold launch would stay in memory only
     push(Workout, { plan }, 'modal');
   }
 </script>
