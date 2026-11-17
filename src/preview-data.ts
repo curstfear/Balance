@@ -35,7 +35,7 @@ export interface Plan {
   exercises: Exercise[];
 }
 
-const ALL: Exercise[] = [
+export const ALL: Exercise[] = [
   { id: 'assisted-pullup', muscle: 'back', name: 'Подтягивания в гравитроне', sets: 4, reps: [8, 10], weight: -25, step: 5, why: 'Спина отстаёт по недельному балансу', rest: 120 },
   { id: 'barbell-row', muscle: 'back', name: 'Тяга штанги в наклоне', sets: 4, reps: [8, 10], weight: 62.5, step: 2.5, why: '+2,5\u00A0кг: в прошлый раз подходы были лёгкими', up: true, rest: 120 },
   { id: 'one-arm-db-row', muscle: 'back', name: 'Тяга гантели одной рукой', sets: 3, reps: [10, 12], weight: 26, step: 2, why: 'Добор недельного объёма спины', rest: 90 },
