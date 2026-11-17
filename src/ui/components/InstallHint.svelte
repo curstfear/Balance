@@ -37,7 +37,7 @@
   .chip { width: 36px; height: 36px; border-radius: 14px; background: var(--fill2); color: var(--t2); display: flex; align-items: center; justify-content: center; flex: none; }
   .txt b { display: block; font-size: 15px; font-weight: 600; letter-spacing: -.2px; }
   .txt span { display: block; font-size: 13px; line-height: 17px; color: var(--t2); margin-top: 2px; }
-  .later { min-width: 44px; min-height: 44px; padding: 0 8px; color: var(--t2); font-size: 15px; font-weight: 500; flex: none; }
+  .later { min-width: 44px; min-height: 44px; padding: 0 6px; color: var(--t2); font-size: 15px; font-weight: 600; flex: none; }
   .steps { list-style: none; margin: 10px 0 18px; }
   .steps li { display: flex; align-items: center; gap: 12px; padding: 12px 0; font-size: 15px; line-height: 20px; }
   .steps li + li { border-top: .5px solid var(--sep); }

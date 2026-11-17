@@ -18,7 +18,7 @@
   </div>
   <p>{s.errorText}{#if storage.retryFailed} <span class="failed">{s.retryFailed}</span>{/if}</p>
   <div class="row actions">
-    <Button variant="secondary" size="m" grow onclick={() => { if (!storage.retrying) retryStorage(); }}>{storage.retrying ? s.retrying : s.retry}</Button>
+    <Button variant="secondary" size="m" onclick={() => { if (!storage.retrying) retryStorage(); }}>{storage.retrying ? s.retrying : s.retry}</Button>
     <button class="more" onclick={() => (open = true)}>{s.more}</button>
   </div>
 </div>
@@ -39,6 +39,6 @@
   p { font-size: 14px; line-height: 19px; color: var(--t2); margin-top: 8px; }
   .failed { color: var(--t1); }
   .actions { gap: 10px; margin-top: 12px; }
-  .more { flex: 1; height: 44px; color: var(--accent-text); font-size: 15px; font-weight: 600; }
+  .more { flex: none; padding: 0 14px; height: 44px; color: var(--accent-text); font-size: 15px; font-weight: 600; }
   .advice { font-size: 15px; line-height: 20px; color: var(--t1); margin: 10px 0 18px; }
 </style>

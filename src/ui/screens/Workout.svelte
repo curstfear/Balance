@@ -224,7 +224,7 @@
   {#if storage.status === 'error'}
     <div class="note warn" role="status"><Icon name="alert" size={16} color="var(--orange)" /><span>{t.storage.notSaved}</span></div>
   {:else if restoredNote}
-    <div class="note" role="status" out:fade={{ duration: 300 }}><Icon name="bolt" size={16} color="var(--accent-text)" /><span>{t.workout.restored(done + 1)}</span></div>
+    <div class="note restored" role="status" out:fade={{ duration: 300 }}><Icon name="bolt" size={16} color="var(--accent-text)" /><span>{t.workout.restored(done + 1)}</span></div>
   {/if}
 
   {#key view}
@@ -358,6 +358,13 @@
   .note :global(.ic) { margin-top: 1px; }
   .note.warn { background: rgba(255, 138, 61, .12); }
   .scroll > .note { margin-top: 10px; }
+  /* floats over the screen so nothing jumps when it fades out (the person may be tapping −/+) */
+  .scroll > .note.restored {
+    position: absolute; z-index: 5; margin: 0;
+    left: var(--gutter); right: var(--gutter); top: calc(var(--safe-top) + 12px + 58px);
+    background: linear-gradient(rgba(212, 255, 58, .1), rgba(212, 255, 58, .1)), var(--sheet);
+    box-shadow: var(--shadow), inset 0 0 0 1px var(--stroke);
+  }
   .badge-ok { width: 24px; height: 24px; border-radius: 8px; background: var(--lime); color: var(--lime-ink); display: flex; align-items: center; justify-content: center; }
   .stat { padding: 14px 16px; }
   .stat .n { font-size: 30px; }
