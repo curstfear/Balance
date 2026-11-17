@@ -16,6 +16,7 @@ export const t = {
     readiness: 'Готовность',
     week: 'Неделя',
     autoClosed: 'Прошлая тренировка завершена автоматически. Выполненные подходы сохранены.',
+    dismiss: 'Скрыть уведомление',
   },
   plan: {
     back: 'Сегодня',
@@ -110,6 +111,8 @@ export const t = {
     retry: 'Повторить',
     retrying: 'Проверка…',
     retryFailed: 'Повторить не удалось.',
+    recoveredTitle: 'Хранилище работает',
+    recoveredText: 'Результаты снова сохраняются.',
     more: 'Подробнее',
     adviceTitle: 'Хранилище недоступно',
     advice: {

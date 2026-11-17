@@ -8,6 +8,9 @@
   import Plan from './Plan.svelte';
   import InstallHint from '../components/InstallHint.svelte';
   import StorageBanner from '../components/StorageBanner.svelte';
+  import AnimatedCheck from '../components/AnimatedCheck.svelte';
+  import { slide } from 'svelte/transition';
+  import { swipeAway } from '../gestures';
   import { storage } from '../../data/storage.svelte';
   import { MUSCLES, weekBalance, planFor, totals } from '../../preview-data';
   import { push, haptic } from '../nav.svelte';
@@ -17,6 +20,8 @@
   const plan = planFor(55);
   const sum = totals(plan);
   const score = Math.round(weekBalance.reduce((a, b) => a + b, 0) / weekBalance.length);
+
+  const dismissAuto = () => { storage.autoClosed = false; };
 
   function start() {
     haptic(15);
@@ -35,9 +40,13 @@
     <div class="avatar" aria-hidden="true">А</div>
   </header>
 
-  {#if storage.status === 'error'}<StorageBanner />{/if}
+  {#if storage.status === 'error' || storage.recovered}<StorageBanner />{/if}
   {#if storage.autoClosed}
-    <div class="auto" role="status"><Icon name="check" size={16} color="var(--accent-text)" /><span>{t.home.autoClosed}</span></div>
+    <div class="auto" role="status" out:slide={{ duration: 260 }} {@attach swipeAway(dismissAuto)}>
+      <AnimatedCheck size={16} color="var(--accent-text)" />
+      <span class="auto-t">{t.home.autoClosed}</span>
+      <button class="x" aria-label={t.home.dismiss} onclick={dismissAuto}><Icon name="close" size={14} /></button>
+    </div>
   {/if}
 
   <WeekStrip today={now} />
@@ -109,7 +118,9 @@
   .title { font-size: 28px; font-weight: 700; letter-spacing: -.5px; margin-top: 6px; line-height: 1.15; }
   .meta { gap: 14px; font-size: 15px; margin-top: 8px; }
   .meta .n { font-weight: 600; }
-  .auto { margin: 12px 0 2px; padding: 11px 12px; border-radius: 14px; background: var(--fill2); display: flex; gap: 9px; font-size: 14px; line-height: 19px; }
+  .auto-t { flex: 1; }
+  .x { width: 44px; height: 44px; margin: -12px -12px -12px 0; flex: none; display: flex; align-items: center; justify-content: center; color: var(--t3); }
+  .auto { touch-action: pan-y; margin: 12px 0 2px; padding: 11px 12px; border-radius: 14px; background: var(--fill2); display: flex; gap: 9px; font-size: 14px; line-height: 19px; }
   .auto :global(.ic) { margin-top: 1px; }
   .why { margin-top: 14px; padding: 11px 12px; border-radius: 14px; background: var(--fill2); display: flex; gap: 9px; font-size: 14px; line-height: 19px; }
   .why :global(.ic) { margin-top: 1px; }

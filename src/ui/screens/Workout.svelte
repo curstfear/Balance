@@ -9,6 +9,7 @@
   import Dock from '../components/Dock.svelte';
   import Icon from '../components/Icon.svelte';
   import RestRing from '../components/RestRing.svelte';
+  import AnimatedCheck from '../components/AnimatedCheck.svelte';
   import Sheet from '../components/Sheet.svelte';
   import Stop from './Stop.svelte';
   import { closeTo, push, haptic } from '../nav.svelte';
@@ -224,7 +225,7 @@
   {#if storage.status === 'error'}
     <div class="note warn" role="status"><Icon name="alert" size={16} color="var(--orange)" /><span>{t.storage.notSaved}</span></div>
   {:else if restoredNote}
-    <div class="note restored" role="status" out:fade={{ duration: 300 }}><Icon name="bolt" size={16} color="var(--accent-text)" /><span>{t.workout.restored(done + 1)}</span></div>
+    <div class="note restored" role="status" out:fade={{ duration: 300 }}><AnimatedCheck size={16} color="var(--accent-text)" /><span>{t.workout.restored(done + 1)}</span></div>
   {/if}
 
   {#key view}

@@ -12,7 +12,11 @@ export const storage = $state({
   installHint: false,
   /** a workout left open too long was closed on this launch (its sets are kept) */
   autoClosed: false,
+  /** «Повторить» worked: the banner turns into a short confirmation before it goes away */
+  recovered: false,
 });
+
+export const RECOVERED_MS = 2000;
 
 let db: BalanceDB | null = null;
 let markReady: () => void;
@@ -68,6 +72,10 @@ export async function retryStorage() {
   await openStorage();
   storage.retrying = false;
   storage.retryFailed = storage.status !== 'ok';
+  if (storage.status === 'ok') {
+    storage.recovered = true;
+    setTimeout(() => { storage.recovered = false; }, RECOVERED_MS);
+  }
 }
 
 export const canPersist = () => db !== null;
