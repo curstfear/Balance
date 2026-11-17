@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { nav, swipeBack } from './ui/nav.svelte';
+  import { nav, swipeBack, isActive } from './ui/nav.svelte';
 </script>
 
 <div id="app">
-  {#each nav.stack as e, i (e.id)}
+  {#each nav.stack as e (e.id)}
     <section
       class="screen pos-{e.pos}"
       class:no-anim={!e.anim}
       class:modal={e.kind === 'modal'}
       {@attach swipeBack(e)}
-      aria-hidden={i < nav.stack.length - 1}
-      inert={i < nav.stack.length - 1}
+      aria-hidden={!isActive(e)}
+      inert={!isActive(e)}
     >
       <e.component {...e.props} />
     </section>

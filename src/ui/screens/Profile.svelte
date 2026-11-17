@@ -8,7 +8,7 @@
   import { EXERCISES, EQUIPMENT } from '../../data/catalog';
   import { read } from '../../data/storage.svelte';
   import { profileStats, type ProfileStats } from '../../data/workouts';
-  import { nav, push } from '../nav.svelte';
+  import { depth, push } from '../nav.svelte';
   import { goTab, startWorkout } from '../tabs';
   import { fmt } from '../format';
   import { t } from '../strings';
@@ -18,7 +18,7 @@
   let stats = $state<ProfileStats | 'off' | null>(null);
   // re-read whenever Profile is the visible root again (e.g. after a workout started from here)
   $effect(() => {
-    if (nav.stack.length === 1) read(profileStats).then((s) => (stats = s ?? 'off'));
+    if (depth() === 1) read(profileStats).then((s) => (stats = s ?? 'off'));
   });
   const s = $derived(stats && stats !== 'off' ? stats : null);
   const days = $derived(s?.since ? Math.floor((Date.now() - s.since) / 86_400_000) + 1 : 0);
