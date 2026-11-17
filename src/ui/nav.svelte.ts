@@ -11,6 +11,8 @@ export interface Entry {
   kind: Kind;
   pos: Pos;
   anim: boolean;
+  /** popped: still on screen while it slides away, but no longer part of the navigation */
+  leaving?: boolean;
 }
 
 export const DURATION = 520;
@@ -18,7 +20,12 @@ let seq = 0;
 
 export const nav = $state({ stack: [] as Entry[] });
 
-const top = () => nav.stack[nav.stack.length - 1];
+const live = () => nav.stack.filter((e) => !e.leaving);
+const top = () => live().at(-1);
+/** Number of screens in the navigation (screens sliding away after «назад» are not counted). */
+export const depth = () => live().length;
+/** The screen the person interacts with: everything else is inert. */
+export const isActive = (e: Entry) => e === top();
 const frames = () => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
 
 function entry<P extends Record<string, unknown>>(component: Component<P>, props: P, kind: Kind, pos: Pos): Entry {
@@ -37,7 +44,7 @@ export async function push<P extends Record<string, unknown>>(component: Compone
     return;
   }
   nav.stack.push(entry(component, props, kind, 'enter'));
-  const added = top();
+  const added = top()!;
   await tick();
   await frames(); // let the start position paint first
   added.anim = true;
@@ -49,9 +56,12 @@ export async function push<P extends Record<string, unknown>>(component: Compone
 }
 
 export function pop() {
-  if (nav.stack.length < 2) return;
-  const leaving = top();
-  const prev = nav.stack[nav.stack.length - 2];
+  const screens = live();
+  if (screens.length < 2) return;
+  const leaving = screens[screens.length - 1];
+  const prev = screens[screens.length - 2];
+  // the screen underneath becomes active at once — a second «назад» during the slide must work
+  leaving.leaving = true;
   leaving.anim = prev.anim = true;
   leaving.pos = 'enter';
   prev.pos = 'active';
@@ -61,9 +71,10 @@ export function pop() {
 
 /** Dismiss the top screen straight down to `depth`, dropping the screens in between (workout → home). */
 export async function closeTo(depth: number) {
-  const leaving = top();
-  if (!leaving || nav.stack.length <= depth + 1) return;
-  nav.stack = [...nav.stack.slice(0, depth + 1), leaving];
+  const screens = live();
+  const leaving = screens.at(-1);
+  if (!leaving || screens.length <= depth + 1) return;
+  nav.stack = [...screens.slice(0, depth + 1), leaving];
   const target = nav.stack[depth];
   const behind: Pos = leaving.kind === 'modal' ? 'behind-modal' : 'behind-push';
   if (target.pos !== behind) {
@@ -81,11 +92,23 @@ export async function closeTo(depth: number) {
 // While dragging, styles are written straight to the DOM — no re-render per frame.
 
 export function canSwipeBack(e: Entry): boolean {
-  return e === top() && e.kind === 'push' && nav.stack.length > 1;
+  return e === top() && e.kind === 'push' && depth() > 1;
+}
+
+/** A horizontally scrollable strip (similar exercises, chips) under the finger keeps its own swipes. */
+function inHorizontalScroller(target: EventTarget | null, root: HTMLElement): boolean {
+  for (let el = target as HTMLElement | null; el && el !== root; el = el.parentElement) {
+    if (el.scrollWidth > el.clientWidth + 1) {
+      const o = getComputedStyle(el).overflowX;
+      if (o === 'auto' || o === 'scroll') return true;
+    }
+  }
+  return false;
 }
 
 const SLOP = 8;
 const BEHIND = 28; // % the screen underneath is shifted left
+const EDGE = 24; // px: a swipe from the left edge always goes back
 
 export function swipeBack(e: Entry) {
   return (node: HTMLElement) => {
@@ -114,6 +137,8 @@ export function swipeBack(e: Entry) {
     const onStart = (ev: TouchEvent) => {
       if (ev.touches.length !== 1 || !canSwipeBack(e)) { mode = 'idle'; return; }
       const t = ev.touches[0];
+      // inside a sideways strip only a swipe from the very edge goes back (as in iOS)
+      if (t.clientX > EDGE && inHorizontalScroller(ev.target, node)) { mode = 'idle'; return; }
       sx = t.clientX; sy = t.clientY; w = node.clientWidth || 1;
       samples = [{ x: sx, t: ev.timeStamp }];
       mode = 'track';

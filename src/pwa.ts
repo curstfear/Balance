@@ -2,7 +2,7 @@
 // A new version is downloaded in the background and applied only when the app is hidden
 // and the user is on the root screen — an update never interrupts a workout.
 import { registerSW } from 'virtual:pwa-register';
-import { nav } from './ui/nav.svelte';
+import { depth } from './ui/nav.svelte';
 
 export function setupPwa() {
   if (!('serviceWorker' in navigator)) return;
@@ -20,7 +20,7 @@ export function setupPwa() {
   });
 
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden' && pending && nav.stack.length === 1) {
+    if (document.visibilityState === 'hidden' && pending && depth() === 1) {
       pending = false;
       updateSW(true); // activates the new worker and reloads while the app is not on screen
     }
