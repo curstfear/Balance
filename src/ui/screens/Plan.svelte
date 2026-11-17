@@ -17,6 +17,11 @@
   const sum = $derived(totals(plan));
   const options = ([45, 55, 70] as Minutes[]).map((m) => ({ value: m, label: `${m} ${t.units.min}` }));
 
+  async function openCard(id: string) {
+    const { default: ExerciseCard } = await import('./ExerciseCard.svelte');
+    push(ExerciseCard, { id, back: t.plan.eyebrow });
+  }
+
   async function start() {
     haptic(15);
     await storageReady; // otherwise a workout started on a slow cold launch would stay in memory only
@@ -48,7 +53,7 @@
 
   <div class="sec">{t.plan.main}</div>
   <div class="list">
-    {#each plan.exercises as e, i (e.name)}<ExerciseRow exercise={e} index={i + 1} />{/each}
+    {#each plan.exercises as e, i (e.name)}<ExerciseRow exercise={e} index={i + 1} onopen={() => openCard(e.id)} />{/each}
   </div>
 </div>
 

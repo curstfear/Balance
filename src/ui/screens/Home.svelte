@@ -15,6 +15,7 @@
   import { MUSCLES, weekBalance, planFor, totals } from '../../preview-data';
   import { push, haptic } from '../nav.svelte';
   import { t, plural, FORMS } from '../strings';
+  import { goTab } from '../tabs';
 
   const now = new Date();
   const plan = planFor(55);
@@ -105,7 +106,7 @@
   </div>
 </div>
 
-<TabBar active="today" onstart={start} />
+<TabBar active="today" onstart={start} onselect={goTab} />
 
 <style>
   .head { margin-top: 10px; }

@@ -2,7 +2,7 @@
 // (where the person stopped), so a workout survives closing the app or rebooting the phone.
 // Records are always built field by field: Svelte $state proxies cannot be structured-cloned.
 import { uid, type BalanceDB } from './db';
-import type { Cursor, Muscle, PainLevel, SetRecord, Workout, WorkoutExercise } from './schema';
+import type { Cursor, Epoch, Muscle, PainLevel, SetRecord, Workout, WorkoutExercise } from './schema';
 
 /** Rules the workout was built with; the preview has no engine yet. */
 export const ENGINE_VERSION = 'preview-0';
@@ -170,4 +170,15 @@ export function planFromWorkout(data: WorkoutData): PlanInput {
       why: String(e.reasons.find((r) => r.code === 'preview')?.params?.text ?? ''),
     })),
   };
+}
+
+export interface ProfileStats { workouts: number; sets: number; since: Epoch | null }
+
+/** Numbers for the profile card: finished workouts, work sets, date of the first workout. Computed, not stored. */
+export async function profileStats(db: BalanceDB): Promise<ProfileStats> {
+  const done = await db.workouts.where('status').equals('finished').toArray();
+  const ids = new Set(done.map((w) => w.id));
+  const sets = (await db.sets.toArray()).filter((s) => ids.has(s.workoutId) && s.kind === 'work').length;
+  const since = done.length ? Math.min(...done.map((w) => w.startedAt)) : null;
+  return { workouts: done.length, sets, since };
 }
