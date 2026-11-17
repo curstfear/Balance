@@ -1,20 +1,14 @@
 <script lang="ts">
-  import { nav, dragStart, dragMove, dragEnd, dragStyle } from './ui/nav.svelte';
-
-  let width = $state(400);
+  import { nav, swipeBack } from './ui/nav.svelte';
 </script>
 
-<div id="app" bind:clientWidth={width}>
+<div id="app">
   {#each nav.stack as e, i (e.id)}
     <section
       class="screen pos-{e.pos}"
       class:no-anim={!e.anim}
       class:modal={e.kind === 'modal'}
-      style={dragStyle(e, i, width)}
-      onpointerdown={(ev) => dragStart(ev, e)}
-      onpointermove={dragMove}
-      onpointerup={dragEnd}
-      onpointercancel={dragEnd}
+      {@attach swipeBack(e)}
       aria-hidden={i < nav.stack.length - 1}
       inert={i < nav.stack.length - 1}
     >

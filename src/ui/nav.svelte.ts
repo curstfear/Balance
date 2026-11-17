@@ -11,8 +11,6 @@ export interface Entry {
   kind: Kind;
   pos: Pos;
   anim: boolean;
-  /** px offset while the user drags the screen back */
-  drag: number | null;
 }
 
 export const DURATION = 520;
@@ -24,7 +22,7 @@ const top = () => nav.stack[nav.stack.length - 1];
 const frames = () => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
 
 function entry<P extends Record<string, unknown>>(component: Component<P>, props: P, kind: Kind, pos: Pos): Entry {
-  return { id: ++seq, component, props, kind, pos, anim: false, drag: null };
+  return { id: ++seq, component, props, kind, pos, anim: false };
 }
 
 export function setRoot<P extends Record<string, unknown>>(component: Component<P>, props: P) {
@@ -50,7 +48,6 @@ export function pop() {
   const leaving = top();
   const prev = nav.stack[nav.stack.length - 2];
   leaving.anim = prev.anim = true;
-  leaving.drag = prev.drag = null;
   leaving.pos = 'enter';
   prev.pos = 'active';
   const id = leaving.id;
@@ -73,53 +70,92 @@ export async function closeTo(depth: number) {
   pop();
 }
 
-// ---- swipe back from the left edge (push screens only) ----
-const EDGE = 28;
-let start: { x: number; t: number; w: number } | null = null;
+// ---- swipe back (push screens only) ----
+// Touch events, not pointer events: iOS cancels pointer streams as soon as it starts scrolling.
+// The gesture can start anywhere on the screen (as in iOS 26); direction is decided after 8px.
+// While dragging, styles are written straight to the DOM — no re-render per frame.
 
 export function canSwipeBack(e: Entry): boolean {
   return e === top() && e.kind === 'push' && nav.stack.length > 1;
 }
 
-export function dragStart(ev: PointerEvent, e: Entry) {
-  if (!canSwipeBack(e) || ev.clientX > EDGE) return;
-  start = { x: ev.clientX, t: ev.timeStamp, w: (ev.currentTarget as HTMLElement).clientWidth };
-  (ev.currentTarget as HTMLElement).setPointerCapture(ev.pointerId);
-}
+const SLOP = 8;
+const BEHIND = 28; // % the screen underneath is shifted left
 
-export function dragMove(ev: PointerEvent) {
-  if (!start) return;
-  const dx = Math.max(0, ev.clientX - start.x);
-  const cur = top();
-  const prev = nav.stack[nav.stack.length - 2];
-  cur.anim = prev.anim = false;
-  cur.drag = dx;
-  prev.drag = dx;
-}
+export function swipeBack(e: Entry) {
+  return (node: HTMLElement) => {
+    let mode: 'idle' | 'track' | 'drag' = 'idle';
+    let sx = 0, sy = 0, w = 1;
+    let under: HTMLElement | null = null;
+    let samples: { x: number; t: number }[] = [];
 
-export function dragEnd(ev: PointerEvent) {
-  if (!start) return;
-  const dx = Math.max(0, ev.clientX - start.x);
-  const v = dx / Math.max(1, ev.timeStamp - start.t);
-  const w = start.w;
-  start = null;
-  if (dx > w * 0.33 || (v > 0.5 && dx > 30)) {
-    pop();
-  } else {
-    const cur = top();
-    const prev = nav.stack[nav.stack.length - 2];
-    cur.anim = prev.anim = true;
-    cur.drag = prev.drag = null;
-  }
-}
+    const set = (el: HTMLElement | null, transform: string, filter = '') => {
+      if (!el) return;
+      el.style.transform = transform;
+      el.style.filter = filter;
+    };
+    const apply = (dx: number) => {
+      const p = Math.min(1, dx / w);
+      set(node, `translateX(${dx}px)`);
+      set(under, `translateX(${(-BEHIND + BEHIND * p).toFixed(2)}%)`, `brightness(${(0.7 + 0.3 * p).toFixed(3)})`);
+    };
+    const release = () => {
+      for (const el of [node, under]) {
+        if (!el) continue;
+        el.style.transition = el.style.transform = el.style.filter = el.style.willChange = '';
+      }
+    };
 
-/** Inline transform while dragging; null = let the CSS position classes apply. */
-export function dragStyle(e: Entry, index: number, width: number): string | null {
-  if (e.drag === null) return null;
-  const isTop = index === nav.stack.length - 1;
-  if (isTop) return `transform: translateX(${e.drag}px)`;
-  const p = Math.min(1, e.drag / width);
-  return `transform: translateX(${(-28 + 28 * p).toFixed(2)}%); filter: brightness(${(0.7 + 0.3 * p).toFixed(3)})`;
+    const onStart = (ev: TouchEvent) => {
+      if (ev.touches.length !== 1 || !canSwipeBack(e)) { mode = 'idle'; return; }
+      const t = ev.touches[0];
+      sx = t.clientX; sy = t.clientY; w = node.clientWidth || 1;
+      samples = [{ x: sx, t: ev.timeStamp }];
+      mode = 'track';
+    };
+
+    const onMove = (ev: TouchEvent) => {
+      if (mode === 'idle') return;
+      const t = ev.touches[0];
+      const dx = t.clientX - sx, dy = t.clientY - sy;
+      if (mode === 'track') {
+        if (Math.abs(dx) < SLOP && Math.abs(dy) < SLOP) return;
+        if (dx <= 0 || Math.abs(dx) < Math.abs(dy) * 1.2) { mode = 'idle'; return; } // vertical scroll wins
+        mode = 'drag';
+        under = node.previousElementSibling as HTMLElement | null;
+        for (const el of [node, under]) if (el) { el.style.transition = 'none'; el.style.willChange = 'transform'; }
+        sx = t.clientX; // start from here so the screen doesn't jump by the slop
+      }
+      ev.preventDefault();
+      apply(Math.max(0, t.clientX - sx));
+      samples.push({ x: t.clientX, t: ev.timeStamp });
+      if (samples.length > 6) samples.shift();
+    };
+
+    const onEnd = (ev: TouchEvent) => {
+      if (mode !== 'drag') { mode = 'idle'; return; }
+      mode = 'idle';
+      const last = samples[samples.length - 1];
+      const first = samples[0];
+      const dx = Math.max(0, last.x - sx);
+      const v = (last.x - first.x) / Math.max(1, last.t - first.t); // px/ms
+      const commit = ev.type === 'touchend' && (dx > w * 0.4 || (v > 0.35 && dx > 24));
+      release(); // inline styles off → CSS classes take over and animate from the current spot
+      if (commit) pop();
+      under = null;
+    };
+
+    node.addEventListener('touchstart', onStart, { passive: true });
+    node.addEventListener('touchmove', onMove, { passive: false });
+    node.addEventListener('touchend', onEnd);
+    node.addEventListener('touchcancel', onEnd);
+    return () => {
+      node.removeEventListener('touchstart', onStart);
+      node.removeEventListener('touchmove', onMove);
+      node.removeEventListener('touchend', onEnd);
+      node.removeEventListener('touchcancel', onEnd);
+    };
+  };
 }
 
 export function haptic(ms = 10) {
